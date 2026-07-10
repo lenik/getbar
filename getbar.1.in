@@ -1,0 +1,113 @@
+.TH getbar 1 "@PROJECT_YEAR@" "@PROJECT_VERSION@" "User Commands"
+.SH NAME
+getbar \- HTTP download throughput bar series
+.SH SYNOPSIS
+.B getbar
+.RI [ OPTION ]...
+.IR URL
+.SH DESCRIPTION
+.B getbar
+downloads
+.IR URL
+with HTTP or HTTPS GET using libcurl and records a bar series on standard output.
+Use block mode to record per-block receive durations in microseconds, or interval
+mode to record bytes received per time slice.
+.PP
+The first duration in block mode is the wait before data arrives; later values are
+real block durations. Interval mode may print leading zeros while waiting for data.
+.PP
+End of output means the download completed, hit
+.B \-\-window
+or
+.BR \-\-size-max ,
+or failed.
+.SH OPTIONS
+.TP
+.BR \-b ", " \-\-block-size =\fINUM\fR[kmgKMG]
+Split the download into blocks of
+.IR NUM
+bytes and record each block duration in microseconds.
+.TP
+.BR \-i ", " \-\-interval =\fINUM\fR[um][s]
+Record bytes received every
+.IR NUM
+microseconds, milliseconds, or seconds.
+.IR NUM
+may be fractional (for example
+.BR 0.1s
+or
+.BR 100.5ms ).
+.TP
+.BR \-s ", " \-\-size-max =\fINUM\fR[kmgKMG]
+Stop after receiving
+.IR NUM
+bytes.
+.TP
+.BR \-w ", " \-\-window =\fINUM\fR[um][s]
+Stop after the given time limit.
+.TP
+.BR \-p ", " \-\-polynomial =\fIORDER\fR
+After the series, print a polynomial fit line:
+.IR offset
+followed by coefficients. In block mode the offset is the count of leading zero
+block durations; in interval mode it is the delay before receiving starts, in
+seconds. The same fit is drawn on the
+.BR \-\-gnuplot
+chart when this option is given.
+.TP
+.BR \-g ", " \-\-gnuplot =\fIFILE\fR
+Write gnuplot output to
+.IR FILE .
+Image extensions
+.RB ( .png ", " .svg ", " .pdf ", " .eps )
+are rendered with gnuplot; any other extension saves a gnuplot script without
+rendering (gnuplot is not required in that case).
+If
+.BR \-\-polynomial
+is also set, include the fitted curve in the plot.
+Optional theming is read from
+.IR $XDG_CONFIG_HOME /getbar/gnuplot.rc
+when present.
+.TP
+.BR \-f ", " \-\-force
+Overwrite an existing gnuplot output file.
+.TP
+.BR \-e ", " \-\-estimate-bps =\fINUM\fR[um][s]
+After the series, print an estimated download speed in bytes per second measured
+from
+.IR NUM
+after data starts arriving until the transfer ends.
+.TP
+.BR \-q ", " \-\-quiet
+Do not print the bar series.
+.TP
+.BR \-v ", " \-\-verbose
+Log transfer details to standard error.
+.TP
+.BR \-h ", " \-\-help
+Print help and exit.
+.TP
+.B \-\-version
+Print version and exit.
+.SH EXAMPLES
+.TP
+64 KiB blocks:
+.B getbar \-b 64k https://example.com/file
+.TP
+100 ms intervals with speed estimate after 1 s:
+.B getbar \-i 100ms \-e 1s \-q https://example.com/file
+.TP
+Block chart with polynomial overlay:
+.B getbar \-b 64k \-p 2 \-g /tmp/getbar.png https://example.com/file
+.TP
+Save a gnuplot script instead of rendering:
+.B getbar \-b 64k \-g /tmp/getbar.gp https://example.com/file
+.SH FILES
+.TP
+.I $XDG_CONFIG_HOME/getbar/gnuplot.rc
+Optional gnuplot commands loaded before plotting (colors, fonts, grid, and so on).
+.SH AUTHOR
+Written by @PROJECT_AUTHOR@ <@PROJECT_EMAIL@>.
+.SH COPYRIGHT
+Copyright \(co @PROJECT_YEAR@.
+License AGPL-3.0-or-later.
