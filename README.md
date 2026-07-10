@@ -11,6 +11,22 @@ getbar [OPTION]... URL
 
 One of **block mode** (`-b`) or **interval mode** (`-i`) is required.
 
+## Translations
+
+| Language | README |
+|----------|--------|
+| English | README.md (this file) |
+| Chinese (Simplified) | [README-zh_CN.md](README-zh_CN.md) |
+| Chinese (Traditional) | [README-zh_TW.md](README-zh_TW.md) |
+| Japanese | [README-ja.md](README-ja.md) |
+| Korean | [README-ko.md](README-ko.md) |
+| Thai | [README-th.md](README-th.md) |
+| Vietnamese | [README-vi.md](README-vi.md) |
+| French | [README-fr.md](README-fr.md) |
+| German | [README-de.md](README-de.md) |
+| Italian | [README-it.md](README-it.md) |
+| Esperanto | [README-eo.md](README-eo.md) |
+
 ## Output
 
 ### Block mode (`-b`)
@@ -116,11 +132,17 @@ Charts use box plots for the series. Idle buckets **before** the polynomial
 offset are omitted from the plot so the graph focuses on the active transfer.
 With `-p`, the fitted polynomial is overlaid as a line.
 
+Example (interval mode with polynomial overlay):
+
+![getbar throughput chart](images/chart.png)
+
 Optional theming: copy
 `share/getbar/gnuplot.rc.example` to
 `$XDG_CONFIG_HOME/getbar/gnuplot.rc` (or `~/.config/getbar/gnuplot.rc`).
 
 ## Examples
+
+### Basic measurements
 
 Per-block timings with 64 KiB blocks:
 
@@ -134,23 +156,104 @@ getbar -b 64k https://example.com/file
 getbar -i 100ms -e 1s -q https://example.com/file
 ```
 
-Fractional interval, 3 s cap, verbose + force overwrite chart:
+Read time-to-first-byte (microseconds) from the first field in block mode:
+
+```bash
+getbar -b 64k -s 256k https://example.com/file | awk '{print $1}'
+```
+
+### Controlled download size or duration
+
+Sample 10 MiB and print a steady-state speed estimate (useful for mirrors):
+
+```bash
+getbar -i 100ms -s 10M -e 2s -q https://mirror.example/file
+```
+
+Run for at most 30 s regardless of file size (soak / CDN edge test):
+
+```bash
+getbar -i 1s -w 30s -v https://cdn.example/large.bin
+```
+
+Cap both time and bytes — stop at whichever limit comes first:
+
+```bash
+getbar -b 1M -s 50M -w 60s https://example.com/file
+```
+
+### Charts and analysis
+
+Fractional interval, 3 s cap, verbose log, force overwrite chart:
 
 ```bash
 getbar -vfw3 -i0.1s -g /tmp/getbar.png -f https://example.com/file
 ```
 
-Block chart with quadratic overlay:
+Block chart with quadratic polynomial overlay:
 
 ```bash
 getbar -b 64k -p 2 -g /tmp/getbar.png https://example.com/file
 ```
 
-Save a script for later editing:
+Interval chart with polynomial (matches the sample figure above):
+
+```bash
+getbar -i 100ms -p 2 -g chart.png -f https://example.com/file
+```
+
+Export SVG for reports or wikis:
+
+```bash
+getbar -i 200ms -p 2 -g report.svg -f https://example.com/file
+```
+
+Save a gnuplot script for later editing (no `gnuplot` required at run time):
 
 ```bash
 getbar -b 64k -g /tmp/getbar.gp https://example.com/file
 gnuplot /tmp/getbar.gp
+```
+
+### Comparing mirrors or URLs
+
+Print one estimated B/s line per URL (5 MiB sample each):
+
+```bash
+for url in https://mirror-a.example/file https://mirror-b.example/file; do
+  printf '%s\t' "$url"
+  getbar -i 100ms -s 5M -e 1s -q "$url"
+done
+```
+
+Sort mirrors by estimated throughput:
+
+```bash
+while read -r url; do
+  bps=$(getbar -i 100ms -s 5M -e 1s -q "$url") || continue
+  printf '%s\t%s\n' "$bps" "$url"
+done < mirrors.txt | sort -nr
+```
+
+### Shell integration
+
+Log verbose transfer details on stderr while keeping stdout machine-readable:
+
+```bash
+getbar -v -i 100ms -s 10M https://example.com/file > series.txt
+```
+
+Store series and chart in one run:
+
+```bash
+getbar -i 100ms -s 20M -g run.png -f https://example.com/file | tee series.txt
+```
+
+Rough MiB/s from the estimate line:
+
+```bash
+bps=$(getbar -i 100ms -s 10M -e 1s -q https://example.com/file)
+awk -v b="$bps" 'BEGIN { printf "~ %.2f MiB/s\n", b / 1024 / 1024 }'
 ```
 
 ## Dependencies

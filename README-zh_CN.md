@@ -10,6 +10,22 @@ getbar [选项]... URL
 
 必须指定 **块模式**（`-b`）或 **间隔模式**（`-i`）之一。
 
+## 其他语言
+
+| 语言 | README |
+|------|--------|
+| English | [README.md](README.md) |
+| 简体中文 | README-zh_CN.md（本文） |
+| 繁體中文 | [README-zh_TW.md](README-zh_TW.md) |
+| 日本語 | [README-ja.md](README-ja.md) |
+| 한국어 | [README-ko.md](README-ko.md) |
+| ไทย | [README-th.md](README-th.md) |
+| Tiếng Việt | [README-vi.md](README-vi.md) |
+| Français | [README-fr.md](README-fr.md) |
+| Deutsch | [README-de.md](README-de.md) |
+| Italiano | [README-it.md](README-it.md) |
+| Esperanto | [README-eo.md](README-eo.md) |
+
 ## 输出格式
 
 ### 块模式（`-b`）
@@ -113,11 +129,17 @@ getbar -vfw3 -i100ms https://example.com/file
 图表用柱状图表示序列。绘图时会去掉多项式 **offset** 之前的空闲桶，突出有效
 传输段。指定 `-p` 时叠加拟合曲线。
 
+示例（间隔模式 + 多项式拟合）：
+
+![getbar 吞吐量图表](images/chart.png)
+
 可选主题：将 `share/getbar/gnuplot.rc.example` 复制到
 `$XDG_CONFIG_HOME/getbar/gnuplot.rc`
 （或 `~/.config/getbar/gnuplot.rc`）。
 
 ## 示例
+
+### 基本测量
 
 64 KiB 分块计时：
 
@@ -131,6 +153,34 @@ getbar -b 64k https://example.com/file
 getbar -i 100ms -e 1s -q https://example.com/file
 ```
 
+从块模式输出的第一个字段读取首字节时间 TTFB（微秒）：
+
+```bash
+getbar -b 64k -s 256k https://example.com/file | awk '{print $1}'
+```
+
+### 限制下载量或时长
+
+只拉取 10 MiB 并输出稳态速度估算（适合测镜像）：
+
+```bash
+getbar -i 100ms -s 10M -e 2s -q https://mirror.example/file
+```
+
+最多运行 30 s，不论文件多大（浸泡测试 / CDN 边缘节点）：
+
+```bash
+getbar -i 1s -w 30s -v https://cdn.example/large.bin
+```
+
+同时限制字节数和时间，先到先停：
+
+```bash
+getbar -b 1M -s 50M -w 60s https://example.com/file
+```
+
+### 图表与分析
+
 小数间隔、3 秒上限、详细日志并强制覆盖图表：
 
 ```bash
@@ -143,11 +193,64 @@ getbar -vfw3 -i0.1s -g /tmp/getbar.png -f https://example.com/file
 getbar -b 64k -p 2 -g /tmp/getbar.png https://example.com/file
 ```
 
-仅保存脚本，稍后手动渲染：
+间隔模式 + 多项式（与上文示例图一致）：
+
+```bash
+getbar -i 100ms -p 2 -g chart.png -f https://example.com/file
+```
+
+导出 SVG 用于报告或文档：
+
+```bash
+getbar -i 200ms -p 2 -g report.svg -f https://example.com/file
+```
+
+仅保存脚本，稍后手动渲染（运行时无需 `gnuplot`）：
 
 ```bash
 getbar -b 64k -g /tmp/getbar.gp https://example.com/file
 gnuplot /tmp/getbar.gp
+```
+
+### 对比镜像或 URL
+
+每个 URL 拉 5 MiB 并打印一行估算 B/s：
+
+```bash
+for url in https://mirror-a.example/file https://mirror-b.example/file; do
+  printf '%s\t' "$url"
+  getbar -i 100ms -s 5M -e 1s -q "$url"
+done
+```
+
+按估算吞吐排序镜像列表：
+
+```bash
+while read -r url; do
+  bps=$(getbar -i 100ms -s 5M -e 1s -q "$url") || continue
+  printf '%s\t%s\n' "$bps" "$url"
+done < mirrors.txt | sort -nr
+```
+
+### Shell 集成
+
+stderr 输出详细日志，stdout 保持机器可读：
+
+```bash
+getbar -v -i 100ms -s 10M https://example.com/file > series.txt
+```
+
+一次运行保存序列并生成图表：
+
+```bash
+getbar -i 100ms -s 20M -g run.png -f https://example.com/file | tee series.txt
+```
+
+由估算行粗略换算 MiB/s：
+
+```bash
+bps=$(getbar -i 100ms -s 10M -e 1s -q https://example.com/file)
+awk -v b="$bps" 'BEGIN { printf "~ %.2f MiB/s\n", b / 1024 / 1024 }'
 ```
 
 ## 依赖
