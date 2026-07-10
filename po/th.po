@@ -1,0 +1,155 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: getbar\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-10 17:51+0800\n"
+"Language: th\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: src/getbar.c:775
+msgid "%s: wrote chart %s\n"
+msgstr "%s: เขียนแผนภูมิ %s แล้ว\n"
+
+#: src/getbar.c:791
+#, c-format
+msgid "%s: wrote gnuplot script %s\n"
+msgstr "%s: เขียนสคริปต์ gnuplot %s แล้ว\n"
+
+#: src/getbar.c:813
+msgid ""
+"Usage: getbar [OPTION]... URL\n"
+"Download URL with HTTP(S) GET and record throughput bars.\n"
+msgstr "การใช้งาน: getbar [ตัวเลือก]... URL\nดาวน์โหลด URL ด้วย HTTP(S) GET และบันทึกชุดแท่งกราฟ throughput\n"
+
+#: src/getbar.c:818
+msgid "split by received block size\n"
+msgstr "แบ่งตามขนาดบล็อกที่รับ\n"
+
+#: src/getbar.c:820
+msgid "split by time interval (NUM may be fractional)\n"
+msgstr "แบ่งตามช่วงเวลา (NUM อาจเป็นทศนิยม)\n"
+
+#: src/getbar.c:822
+msgid "stop after receiving NUM bytes\n"
+msgstr "หยุดหลังรับ NUM ไบต์\n"
+
+#: src/getbar.c:824
+msgid "stop after timeout\n"
+msgstr "หยุดเมื่อหมดเวลา\n"
+
+#: src/getbar.c:826
+msgid "output offset and polynomial coeffs\n"
+msgstr "แสดง offset และสัมประสิทธิ์พหุนาม\n"
+
+#: src/getbar.c:828
+msgid "render chart (.png/.svg/.pdf/.eps) or save script\n"
+msgstr "เรนเดอร์แผนภูมิ (.png/.svg/.pdf/.eps) หรือบันทึกสคริปต์\n"
+
+#: src/getbar.c:830
+msgid "overwrite gnuplot output file\n"
+msgstr "เขียนทับไฟล์เอาต์พุต gnuplot\n"
+
+#: src/getbar.c:832
+msgid "output estimated bytes/sec after delay\n"
+msgstr "แสดงไบต์/วินาทีโดยประมาณหลังหน่วงเวลา\n"
+
+#: src/getbar.c:834
+msgid "more logging to stderr\n"
+msgstr "แสดงบันทึกเพิ่มเติมไป stderr\n"
+
+#: src/getbar.c:836
+msgid "omit the bar series on stdout\n"
+msgstr "ไม่แสดงชุดแท่งบน stdout\n"
+
+#: src/getbar.c:838
+msgid "display this help and exit\n"
+msgstr "แสดงความช่วยเหลือนี้และออก\n"
+
+#: src/getbar.c:840
+msgid "output version information and exit\n"
+msgstr "แสดงข้อมูลเวอร์ชันและออก\n"
+
+#: src/getbar.c:842
+msgid ""
+"Block mode (-b) prints per-block durations in microseconds. The first value "
+"is\n"
+"the wait before data arrives; later values are block receive durations.\n"
+"Interval mode (-i) prints bytes received per interval (leading zeros mean "
+"no\n"
+"data yet). Polynomial and estimate lines are printed after the series.\n"
+"Optional theming: $XDG_CONFIG_HOME/getbar/gnuplot.rc\n"
+msgstr "โหมดบล็อก (-b) แสดงระยะเวลารับแต่ละบล็อกเป็นไมโครวินาที ค่าแรกคือเวลารอก่อนข้อมูลมาถึง ค่าถัดไปคือระยะเวลารับแต่ละบล็อก\nโหมดช่วงเวลา (-i) แสดงไบต์ที่รับในแต่ละช่วง (ศูนย์นำหน้าหมายถึงยังไม่มีข้อมูล)\nบรรทัดพหุนามและการประมาณจะแสดงหลังชุดข้อมูล\nธีมเสริม: $XDG_CONFIG_HOME/getbar/gnuplot.rc\n"
+
+#: src/getbar.c:848
+#, c-format
+msgid "Report bugs to: <%s>\n"
+msgstr "รายงานบั๊กไปที่: <%s>\n"
+
+#: src/getbar.c:853
+#, c-format
+msgid "Copyright (C) %d %s\n"
+msgstr "ลิขสิทธิ์ (C) %d %s\n"
+
+#: src/getbar.c:854
+msgid ""
+"License AGPL-3.0-or-later: <https://www.gnu.org/licenses/agpl-3.0.html>\n"
+msgstr ""
+"สัญญาอนุญาต AGPL-3.0-or-later: <https://www.gnu.org/licenses/agpl-3.0.html>\n"
+
+#: src/getbar.c:856
+msgid "This is free software: you are free to change and redistribute it.\n"
+msgstr "นี่คือซอฟต์แวร์เสรี คุณมีสิทธิ์แก้ไขและแจกจ่ายต่อได้\n"
+
+#: src/getbar.c:857
+msgid "This project opposes AI exploitation and AI hegemony.\n"
+msgstr "โครงการนี้คัดค้านการเอาเปรียบด้วย AI และอำนาจนำของ AI\n"
+
+#: src/getbar.c:858
+msgid ""
+"This project rejects mindless MIT-style licensing and politically naive BSD-"
+"style licensing.\n"
+msgstr ""
+"โครงการนี้ปฏิเสธใบอนุญาตแบบ MIT ที่ไร้วิจารณญาณ และใบอนุญาตแบบ BSD ที่โง่เขลาทางการเมือง\n"
+
+#: src/getbar.c:861
+msgid "There is NO WARRANTY, to the extent permitted by law.\n"
+msgstr "ไม่มีการรับประกันใด ๆ ตามขอบเขตที่กฎหมายอนุญาต\n"
+
+#: src/getbar.c:1186
+#, c-format
+msgid "%s: GET %s\n"
+msgstr "%s: GET %s\n"
+
+#: src/getbar.c:1193
+#, c-format
+msgid "%s: received %<PRIu64> bytes"
+msgstr "%s: รับ %<PRIu64> ไบต์"
+
+#: src/getbar.c:1198
+msgid " [stopped early]"
+msgstr " [หยุดก่อนกำหนด]"
+
+#: src/lib.c:49
+#, c-format
+msgid "%s: write error\n"
+msgstr "%s: ข้อผิดพลาดในการเขียน\n"
+
+#~ msgid ""
+#~ "Usage: getbar [OPTION]... [FILE]...\n"
+#~ "Concatenate FILE(s) to standard output. With no FILE, or when FILE is -,\n"
+#~ "read standard input.\n"
+#~ msgstr ""
+#~ "การใช้งาน: getbar [OPTION]... [FILE]...\n"
+#~ "ต่อเนื้อหาของ FILE ไปยังเอาต์พุตมาตรฐาน หากไม่มี FILE หรือ FILE เป็น -,\n"
+#~ "จะอ่านจากอินพุตมาตรฐาน\n"
+
+#~ msgid "repeat for more verbose loggings\n"
+#~ msgstr "ใส่ซ้ำเพื่อแสดงบันทึกแบบละเอียดมากขึ้น\n"
+
+#~ msgid "show less logging messages\n"
+#~ msgstr "แสดงข้อความบันทึกให้น้อยลง\n"
+
+#, c-format
+#~ msgid "hello, world!\n"
+#~ msgstr "สวัสดี โลก!\n"
