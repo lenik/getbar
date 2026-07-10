@@ -6,7 +6,16 @@ Build-Depends: debhelper-compat (= 13),
                meson,
                ninja-build,
                pkgconf,
-               libcurl4-openssl-dev
+               libcurl4-openssl-dev,
+               pandoc,
+               texlive-latex-base,
+               texlive-xetex,
+               texlive-luatex,
+               texlive-lang-chinese,
+               fonts-noto-core,
+               fonts-noto-cjk,
+               fonts-noto,
+               fonts-thai-tlwg,
 Standards-Version: 4.6.0
 Homepage: https://github.com/lenik/getbar
 Rules-Requires-Root: no

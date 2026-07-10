@@ -83,14 +83,93 @@ install_data(
     rename: 'getbar',
 )
 
+readme_langs = ['zh_CN', 'zh_TW', 'ja', 'ko', 'th', 'vi', 'fr', 'de', 'it', 'eo']
+md2luapdf_sp = subproject('md2luapdf')
+m2luapdf = md2luapdf_sp.get_variable('m2luapdf')
+pdf_patch_dep = md2luapdf_sp.get_variable('pdf_patch_dep')
+
+doc_install = ['LICENSE', 'README.md']
+foreach lang : readme_langs
+    doc_install += 'README-' + lang + '.md'
+endforeach
+
 install_data(
-    [
-        'LICENSE',
-        'README.md',
-        'README-zh_CN.md',
-    ],
+    doc_install,
     install_dir: pkgdocdir,
 )
+
+install_data(
+    'images/chart.png',
+    install_dir: pkgdocdir / 'images',
+)
+
+pandoc = find_program('pandoc', required: false)
+lualatex = find_program('lualatex', required: false)
+doc_resource_path = meson.current_source_dir()
+chart_png = files('images/chart.png')
+
+pdf_target_names = []
+
+if pandoc.found() and lualatex.found()
+    custom_target(
+        'README-pdf',
+        input: 'README.md',
+        output: 'README.pdf',
+        command: [
+            m2luapdf,
+            '--srcdir', doc_resource_path,
+            '@INPUT@',
+            '@OUTPUT@',
+        ],
+        depend_files: chart_png + pdf_patch_dep,
+        build_by_default: false,
+        install: true,
+        install_dir: pkgdocdir,
+    )
+    pdf_target_names += 'README.pdf'
+elif not pandoc.found()
+    message('pandoc not found; skipping README PDF generation')
+else
+    message('lualatex not found; skipping README PDF generation')
+endif
+
+foreach lang : readme_langs
+    readme_md = 'README-' + lang + '.md'
+    readme_pdf_name = 'README-' + lang + '.pdf'
+    if not fs.is_file(meson.current_source_dir() / readme_md)
+        message('missing @0@; skipping PDF generation'.format(readme_md))
+        continue
+    endif
+    if not pandoc.found() or not lualatex.found()
+        continue
+    endif
+    custom_target(
+        'README-' + lang + '-pdf',
+        input: readme_md,
+        output: readme_pdf_name,
+        command: [
+            m2luapdf,
+            '--srcdir', doc_resource_path,
+            '--lang', lang,
+            '@INPUT@',
+            '@OUTPUT@',
+        ],
+        depend_files: chart_png + pdf_patch_dep,
+        build_by_default: false,
+        install: true,
+        install_dir: pkgdocdir,
+    )
+    pdf_target_names += readme_pdf_name
+endforeach
+
+if pdf_target_names.length() > 0
+    run_target(
+        'readme-pdfs',
+        command: [
+            'ninja', '-C', '@BUILD_ROOT@',
+        ] + pdf_target_names,
+    )
+endif
 
 config_man = configuration_data()
 config_man.set('PROJECT_VERSION', meson.project_version())
