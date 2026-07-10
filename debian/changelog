@@ -1,0 +1,53 @@
+getbar (1.0.0) testing; urgency=medium
+
+  * Initial release of getbar, a command-line HTTP(S) download throughput tool.
+  * Core download and measurement:
+      - HTTP and HTTPS GET via libcurl with redirect following.
+      - Block mode (-b): record per-block receive durations in microseconds;
+        the first value is time-to-first-byte, later values are block timings.
+      - Interval mode (-i): record bytes received per time slice; leading
+        zeros indicate no data yet during connection or server delay.
+      - Stop conditions: natural EOF, --window timeout, --size-max byte cap,
+        or transfer failure.
+      - Size suffixes k/m/g/t (1024-based) and K/M/G/T (1000-based).
+      - Time suffixes for intervals and limits: bare seconds, ms/m, us/u, s.
+      - Clustered short options with glued values on the last flag only
+        (e.g. -vfw3 -i100ms).
+  * Analysis and output extras:
+      - Polynomial fit (-p, order 0–7): print offset and coefficients after
+        the series; offset reflects idle time before useful data.
+      - Throughput estimate (-e): average bytes per second from a delay after
+        data starts until transfer end.
+      - Quiet mode (-q): suppress the bar series on stdout while keeping extras.
+      - Verbose mode (-v): log URL, byte count, and gnuplot paths on stderr.
+  * Gnuplot integration (-g):
+      - Render charts to .png, .svg, .pdf, or .eps when gnuplot is installed.
+      - Save a standalone gnuplot script for any other extension without
+        requiring gnuplot at run time.
+      - Optional theming via $XDG_CONFIG_HOME/getbar/gnuplot.rc; ship
+        gnuplot.rc.example under /usr/share/getbar/.
+      - Polynomial overlay on charts when -p is also given; idle buckets
+        before the fit offset are omitted from the plot.
+      - --force to overwrite an existing gnuplot output file.
+  * User interface and documentation:
+      - --help and --version with standard AGPL-3.0-or-later banner text.
+      - English manual page getbar(1) with synopsis, options, examples, and
+        FILES section.
+      - README.md and README-zh_CN.md in /usr/share/doc/getbar/.
+      - Bash completion script installed under
+        /usr/share/bash-completion/completions/getbar.
+  * Internationalization:
+      - gettext support via bas-c-static (TEXT_DOMAIN=getbar, config.h
+        LOCALEDIR); init_i18n() at startup.
+      - Translated CLI strings: help text, version banner, error messages,
+        and verbose logging.
+      - Translated manual pages installed under /usr/share/man/<lang>/man1/
+        for de, eo, fr, it, ja, ko, th, vi, zh_CN, and zh_TW.
+      - Complete po catalogs for the same ten locales.
+  * Build and packaging:
+      - Meson/ninja build with git-describe versioning fallback to 1.0.0.
+      - Depends on libcurl; recommends gnuplot for image rendering.
+      - Debian packaging via debhelper compat 13 and meson buildsystem.
+      - install-symlinks and uninstall-symlinks run targets for local dev.
+
+ -- Lenik (谢继雷) <lenik@bodz.net>  Fri, 10 Jul 2026 17:57:39 +0800

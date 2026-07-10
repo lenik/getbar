@@ -1,0 +1,24 @@
+Source: getbar
+Section: utils
+Priority: optional
+Maintainer: Lenik <getbar@bodz.net>
+Build-Depends: debhelper-compat (= 13),
+               meson,
+               ninja-build,
+               pkgconf,
+               libcurl4-openssl-dev
+Standards-Version: 4.6.0
+Homepage: https://github.com/lenik/getbar
+Rules-Requires-Root: no
+
+Package: getbar
+Architecture: any
+Depends:
+    ${shlibs:Depends},
+    ${misc:Depends}
+Recommends:
+    gnuplot
+Description: HTTP download throughput bar series
+ getbar downloads a URL with HTTP(S) GET and records per-block timings or
+ bytes-per-interval on stdout. Optional polynomial fitting, throughput
+ estimates, and gnuplot charts support mirror and CDN benchmarking.
