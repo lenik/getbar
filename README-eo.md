@@ -134,7 +134,7 @@ Kun `-p`, la adaptita polinomo estas supermetita kiel linio.
 
 Ekzemplo (intervala reĝimo kun polinoma supermeto):
 
-![getbar-trafikdiagramo](images/chart.png)
+![getbar-trafikdiagramo](images/chart.png)\
 
 Opcia etoso: kopiu
 `share/getbar/gnuplot.rc.example` al

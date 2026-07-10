@@ -134,7 +134,7 @@ getbar -vfw3 -i100ms https://example.com/file
 
 例（インターバルモード + 多項式オーバーレイ）：
 
-![getbar throughput chart](images/chart.png)
+![getbar throughput chart](images/chart.png)\
 
 任意のテーマ：`share/getbar/gnuplot.rc.example` を
 `$XDG_CONFIG_HOME/getbar/gnuplot.rc`

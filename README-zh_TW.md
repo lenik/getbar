@@ -131,7 +131,7 @@ getbar -vfw3 -i100ms https://example.com/file
 
 範例（間隔模式 + 多項式擬合）：
 
-![getbar 吞吐量圖表](images/chart.png)
+![getbar 吞吐量圖表](images/chart.png)\
 
 可選主題：將 `share/getbar/gnuplot.rc.example` 複製到
 `$XDG_CONFIG_HOME/getbar/gnuplot.rc`

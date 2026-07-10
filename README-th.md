@@ -134,7 +134,7 @@ getbar -vfw3 -i100ms https://example.com/file
 
 ตัวอย่าง (โหมดช่วงเวลาพร้อมพหุนามซ้อน):
 
-![getbar throughput chart](images/chart.png)
+![getbar throughput chart](images/chart.png)\
 
 ธีมเสริม: คัดลอก
 `share/getbar/gnuplot.rc.example` ไปที่

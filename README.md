@@ -134,7 +134,7 @@ With `-p`, the fitted polynomial is overlaid as a line.
 
 Example (interval mode with polynomial overlay):
 
-![getbar throughput chart](images/chart.png)
+![getbar throughput chart](images/chart.png)\
 
 Optional theming: copy
 `share/getbar/gnuplot.rc.example` to

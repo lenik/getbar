@@ -84,9 +84,6 @@ install_data(
 )
 
 readme_langs = ['zh_CN', 'zh_TW', 'ja', 'ko', 'th', 'vi', 'fr', 'de', 'it', 'eo']
-md2luapdf_sp = subproject('md2luapdf')
-m2luapdf = md2luapdf_sp.get_variable('m2luapdf')
-pdf_patch_dep = md2luapdf_sp.get_variable('pdf_patch_dep')
 
 doc_install = ['LICENSE', 'README.md']
 foreach lang : readme_langs
@@ -116,13 +113,13 @@ if pandoc.found() and lualatex.found()
         input: 'README.md',
         output: 'README.pdf',
         command: [
-            m2luapdf,
+            'md2luapdf',
             '--srcdir', doc_resource_path,
             '@INPUT@',
             '@OUTPUT@',
         ],
-        depend_files: chart_png + pdf_patch_dep,
-        build_by_default: false,
+        depend_files: chart_png,
+        build_by_default: true,
         install: true,
         install_dir: pkgdocdir,
     )
@@ -148,14 +145,14 @@ foreach lang : readme_langs
         input: readme_md,
         output: readme_pdf_name,
         command: [
-            m2luapdf,
+            'md2luapdf',
             '--srcdir', doc_resource_path,
             '--lang', lang,
             '@INPUT@',
             '@OUTPUT@',
         ],
-        depend_files: chart_png + pdf_patch_dep,
-        build_by_default: false,
+        depend_files: chart_png,
+        build_by_default: true,
         install: true,
         install_dir: pkgdocdir,
     )

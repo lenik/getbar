@@ -134,7 +134,7 @@ getbar -vfw3 -i100ms https://example.com/file
 
 예(간격 모드 + 다항식 오버레이):
 
-![getbar throughput chart](images/chart.png)
+![getbar throughput chart](images/chart.png)\
 
 선택적 테마: `share/getbar/gnuplot.rc.example`을
 `$XDG_CONFIG_HOME/getbar/gnuplot.rc`

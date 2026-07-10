@@ -135,7 +135,7 @@ Avec `-p`, le polynôme ajusté est superposé sous forme de ligne.
 
 Exemple (mode intervalle avec superposition polynomiale) :
 
-![graphique de débit getbar](images/chart.png)
+![graphique de débit getbar](images/chart.png)\
 
 Thème optionnel : copiez
 `share/getbar/gnuplot.rc.example` vers

@@ -135,7 +135,7 @@ Mit `-p` wird das angepasste Polynom als Linie überlagert.
 
 Beispiel (Intervallmodus mit Polynom-Überlagerung):
 
-![getbar-Durchsatzdiagramm](images/chart.png)
+![getbar-Durchsatzdiagramm](images/chart.png)\
 
 Optionales Theming: Kopieren Sie
 `share/getbar/gnuplot.rc.example` nach

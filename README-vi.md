@@ -134,7 +134,7 @@ Với `-p`, đường đa thức fit được chồng lên.
 
 Ví dụ (chế độ khoảng thời gian có đường đa thức):
 
-![getbar throughput chart](images/chart.png)
+![getbar throughput chart](images/chart.png)\
 
 Tùy chọn giao diện: sao chép
 `share/getbar/gnuplot.rc.example` vào

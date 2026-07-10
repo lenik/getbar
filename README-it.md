@@ -134,7 +134,7 @@ Con `-p`, il polinomio adattato è sovrapposto come linea.
 
 Esempio (modalità intervallo con sovrapposizione polinomiale):
 
-![grafico del throughput getbar](images/chart.png)
+![grafico del throughput getbar](images/chart.png)\
 
 Tema opzionale: copia
 `share/getbar/gnuplot.rc.example` in
