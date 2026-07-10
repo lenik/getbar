@@ -1,0 +1,114 @@
+.TH getbar 1 "@PROJECT_YEAR@" "@PROJECT_VERSION@" "Uzaj komandoj"
+.SH NAME
+getbar \- stang-serio de trafiko por HTTP-elŝutoj
+.SH SYNOPSIS
+.B getbar
+.RI [ opcio ]...
+.IR URL
+.SH DESCRIPTION
+.B getbar
+elŝutas
+.IR URL
+per HTTP aŭ HTTPS GET per libcurl kaj registri stang-serion sur stdout.
+Blok-reĝimo registri ricev-daŭrojn po bloko en mikrosekundoj; interval-reĝimo
+registri ricevitajn bajtojn po tempa intervalo.
+.PP
+En blok-reĝimo la unua daŭro estas la atendo antaŭ alveno de datumoj; postaj
+valoroj estas blok-ricev-daŭroj. En interval-reĝimo povas aperi antaŭaj nuloj
+dum atendo de datumoj.
+.PP
+Fino de eligo signifas elŝuto finita, atingis
+.B \-\-window
+aŭ
+.BR \-\-size-max ,
+aŭ malsukceso.
+.SH OPTIONS
+.TP
+.BR \-b ", " \-\-block-size =\fINUM\fR[kmgKMG]
+Dividi en blokojn de
+.IR NUM
+bajtoj kaj registri ĉiun ricev-daŭron en mikrosekundoj.
+.TP
+.BR \-i ", " \-\-interval =\fINUM\fR[um][s]
+Registri ricevitajn bajtojn ĉiujn
+.IR NUM
+mikrosekundojn, milisekundojn aŭ sekundojn.
+.IR NUM
+povas esti decimala (ekz.
+.BR 0.1s
+aŭ
+.BR 100.5ms ).
+.TP
+.BR \-s ", " \-\-size-max =\fINUM\fR[kmgKMG]
+Halti post ricevo de
+.IR NUM
+bajtoj.
+.TP
+.BR \-w ", " \-\-window =\fINUM\fR[um][s]
+Halti post tempolimo.
+.TP
+.BR \-p ", " \-\-polynomial =\fIORDER\fR
+Post la serio, eligi linion de polinoma adaptado:
+.IR offset
+kaj koeficientoj. En blok-reĝimo offset estas la nombro de antaŭaj nul-blokoj;
+en interval-reĝimo la prokrasto antaŭ komenco de ricevo, en sekundoj.
+Kun
+.BR \-\-gnuplot
+, la sama kurbo estas desegnita.
+.TP
+.BR \-g ", " \-\-gnuplot =\fIFILE\fR
+Skribi gnuplot-eligon al
+.IR FILE .
+Finajoj
+.RB ( .png ", " .svg ", " .pdf ", " .eps )
+ estas bildigitaj per gnuplot; alie nur skripto estas konservita (gnuplot ne
+bezonata).
+Kun
+.BR \-\-polynomial
+, inkluzivi la adaptitan kurbon.
+Opcia temado el
+.IR $XDG_CONFIG_HOME /getbar/gnuplot.rc
+kiam ekzistas.
+.TP
+.BR \-f ", " \-\-force
+Anstataŭigi ekzistan gnuplot-eligan dosieron.
+.TP
+.BR \-e ", " \-\-estimate-bps =\fINUM\fR[um][s]
+Post la serio, eligi taksiitan elŝut-rapidecon en bajtoj/s, mezurita de
+.IR NUM
+post komenco de datumoj ĝis fino de transigo.
+.TP
+.BR \-q ", " \-\-quiet
+Ne eligi la stang-serion.
+.TP
+.BR \-v ", " \-\-verbose
+Protokoli transig-detalojn al stderr.
+.TP
+.BR \-h ", " \-\-help
+Montri helpon kaj eliri.
+.TP
+.B \-\-version
+Montri version kaj eliri.
+.SH EXAMPLES
+.TP
+64-KiB-blokoj:
+.B getbar \-b 64k https://example.com/file
+.TP
+100-ms-intervaloj, takso post 1 s:
+.B getbar \-i 100ms \-e 1s \-q https://example.com/file
+.TP
+Blok-diagramo kun polinomo:
+.B getbar \-b 64k \-p 2 \-g /tmp/getbar.png https://example.com/file
+.TP
+Konservi gnuplot-skripton sen bildigo:
+.B getbar \-b 64k \-g /tmp/getbar.gp https://example.com/file
+.SH FILES
+.TP
+.I $XDG_CONFIG_HOME/getbar/gnuplot.rc
+Opciaj gnuplot-komandoj ŝargitaj antaŭ desegnado (koloroj, tiparoj, reto,
+k.t.p.).
+.SH AUTHOR
+Verkita de @PROJECT_AUTHOR@ <@PROJECT_EMAIL@>.
+.SH COPYRIGHT
+Copyright \(co @PROJECT_YEAR@.
+Permesilo AGPL-3.0-or-later.

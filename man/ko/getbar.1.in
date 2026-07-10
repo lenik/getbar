@@ -1,0 +1,106 @@
+.TH getbar 1 "@PROJECT_YEAR@" "@PROJECT_VERSION@" "사용자 명령"
+.SH NAME
+getbar \- HTTP 다운로드 처리량 막대 시리즈
+.SH SYNOPSIS
+.B getbar
+.RI [ 옵션 ]...
+.IR URL
+.SH DESCRIPTION
+.B getbar
+는 libcurl로 HTTP 또는 HTTPS GET을 사용해
+.IR URL
+을 다운로드하고 표준 출력에 막대 시리즈를 기록합니다.
+블록 모드에서는 블록별 수신 시간(마이크로초)을, 간격 모드에서는 시간 구간별
+수신 바이트 수를 기록합니다.
+.PP
+블록 모드의 첫 값은 데이터 도착 전 대기 시간입니다. 이후 값은 각 블록 수신 시간입니다.
+간격 모드에서는 데이터 대기 중 선행 0이 출력될 수 있습니다.
+.PP
+출력 종료는 다운로드 완료,
+.B \-\-window
+또는
+.BR \-\-size-max
+도달, 또는 실패를 의미합니다.
+.SH OPTIONS
+.TP
+.BR \-b ", " \-\-block-size =\fINUM\fR[kmgKMG]
+.IR NUM
+바이트 단위로 나누어 각 블록 수신 시간(마이크로초)을 기록합니다.
+.TP
+.BR \-i ", " \-\-interval =\fINUM\fR[um][s]
+.IR NUM
+마이크로초, 밀리초 또는 초마다 수신 바이트 수를 기록합니다.
+.IR NUM
+은 소수 가능(예:
+.BR 0.1s
+,
+.BR 100.5ms ).
+.TP
+.BR \-s ", " \-\-size-max =\fINUM\fR[kmgKMG]
+.IR NUM
+바이트 수신 후 중지합니다.
+.TP
+.BR \-w ", " \-\-window =\fINUM\fR[um][s]
+지정 시간 후 중지합니다.
+.TP
+.BR \-p ", " \-\-polynomial =\fIORDER\fR
+시리즈 뒤에 다항식 적합 행을 출력합니다:
+.IR offset
+및 계수. 블록 모드에서 offset은 선행 0 블록 수, 간격 모드에서는 수신 시작 전
+지연(초)입니다.
+.BR \-\-gnuplot
+도 지정하면 차트에 같은 적합을 그립니다.
+.TP
+.BR \-g ", " \-\-gnuplot =\fIFILE\fR
+gnuplot 출력을
+.IR FILE
+에 씁니다.
+.RB ( .png ", " .svg ", " .pdf ", " .eps )
+확장자는 gnuplot으로 렌더링합니다. 그 외는 스크립트만 저장(gnuplot 불필요).
+.BR \-\-polynomial
+도 지정하면 적합 곡선을 포함합니다.
+있으면
+.IR $XDG_CONFIG_HOME /getbar/gnuplot.rc
+에서 선택적 테마를 읽습니다.
+.TP
+.BR \-f ", " \-\-force
+기존 gnuplot 출력 파일을 덮어씁니다.
+.TP
+.BR \-e ", " \-\-estimate-bps =\fINUM\fR[um][s]
+시리즈 뒤에 추정 다운로드 속도(바이트/초)를 출력합니다. 데이터 도착 후
+.IR NUM
+부터 전송 종료까지 측정합니다.
+.TP
+.BR \-q ", " \-\-quiet
+막대 시리즈를 출력하지 않습니다.
+.TP
+.BR \-v ", " \-\-verbose
+전송 세부 정보를 표준 오류에 기록합니다.
+.TP
+.BR \-h ", " \-\-help
+도움말을 출력하고 종료합니다.
+.TP
+.B \-\-version
+버전을 출력하고 종료합니다.
+.SH EXAMPLES
+.TP
+64 KiB 블록:
+.B getbar \-b 64k https://example.com/file
+.TP
+100 ms 간격, 1 s 후 속도 추정:
+.B getbar \-i 100ms \-e 1s \-q https://example.com/file
+.TP
+블록 차트에 다항식 겹치기:
+.B getbar \-b 64k \-p 2 \-g /tmp/getbar.png https://example.com/file
+.TP
+렌더링 없이 gnuplot 스크립트 저장:
+.B getbar \-b 64k \-g /tmp/getbar.gp https://example.com/file
+.SH FILES
+.TP
+.I $XDG_CONFIG_HOME/getbar/gnuplot.rc
+플롯 전에 로드할 선택적 gnuplot 명령(색, 글꼴, 격자 등).
+.SH AUTHOR
+@PROJECT_AUTHOR@ <@PROJECT_EMAIL@> 작성.
+.SH COPYRIGHT
+Copyright \(co @PROJECT_YEAR@.
+라이선스 AGPL-3.0-or-later.

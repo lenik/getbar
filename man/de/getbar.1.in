@@ -1,0 +1,115 @@
+.TH getbar 1 "@PROJECT_YEAR@" "@PROJECT_VERSION@" "Benutzerbefehle"
+.SH NAME
+getbar \- Durchsatzbalken-Reihe fuer HTTP-Downloads
+.SH SYNOPSIS
+.B getbar
+.RI [ Option ]...
+.IR URL
+.SH DESCRIPTION
+.B getbar
+laedt
+.IR URL
+per HTTP- oder HTTPS-GET mit libcurl herunter und zeichnet eine Balkenreihe auf
+der Standardausgabe auf.
+Im Blockmodus werden Empfangsdauern pro Block in Mikrosekunden erfasst, im
+Intervallmodus empfangene Bytes pro Zeitscheibe.
+.PP
+Im Blockmodus ist der erste Wert die Wartezeit vor Datenankunft; danach folgen
+die Block-Empfangsdauern. Im Intervallmodus koennen fuehrende Nullen waehrend
+des Wartens erscheinen.
+.PP
+Ende der Ausgabe bedeutet: Download abgeschlossen,
+.B \-\-window
+oder
+.BR \-\-size-max
+erreicht, oder Fehler.
+.SH OPTIONS
+.TP
+.BR \-b ", " \-\-block-size =\fINUM\fR[kmgKMG]
+In Bloecke von
+.IR NUM
+Bytes aufteilen und jede Empfangsdauer in Mikrosekunden aufzeichnen.
+.TP
+.BR \-i ", " \-\-interval =\fINUM\fR[um][s]
+Empfangene Bytes alle
+.IR NUM
+Mikrosekunden, Millisekunden oder Sekunden aufzeichnen.
+.IR NUM
+darf dezimal sein (z.B.
+.BR 0.1s
+oder
+.BR 100.5ms ).
+.TP
+.BR \-s ", " \-\-size-max =\fINUM\fR[kmgKMG]
+Nach Empfang von
+.IR NUM
+Bytes stoppen.
+.TP
+.BR \-w ", " \-\-window =\fINUM\fR[um][s]
+Nach Zeitlimit stoppen.
+.TP
+.BR \-p ", " \-\-polynomial =\fIORDER\fR
+Nach der Reihe eine Polynom-Anpassungszeile ausgeben:
+.IR offset
+und Koeffizienten. Im Blockmodus ist offset die Anzahl fuehrender Null-Bloecke;
+im Intervallmodus die Verzoegerung vor Empfangsbeginn in Sekunden.
+Mit
+.BR \-\-gnuplot
+wird dieselbe Kurve im Diagramm gezeichnet.
+.TP
+.BR \-g ", " \-\-gnuplot =\fIFILE\fR
+Gnuplot-Ausgabe nach
+.IR FILE
+schreiben.
+Endungen
+.RB ( .png ", " .svg ", " .pdf ", " .eps )
+werden mit gnuplot gerendert; sonst nur Skript speichern (gnuplot nicht noetig).
+Mit
+.BR \-\-polynomial
+wird die Anpassungskurve einbezogen.
+Optional Theming aus
+.IR $XDG_CONFIG_HOME /getbar/gnuplot.rc
+.
+.TP
+.BR \-f ", " \-\-force
+Vorhandene gnuplot-Ausgabedatei ueberschreiben.
+.TP
+.BR \-e ", " \-\-estimate-bps =\fINUM\fR[um][s]
+Nach der Reihe geschaetzte Download-Geschwindigkeit in Bytes/s ausgeben, gemessen
+ab
+.IR NUM
+nach Datenankunft bis Transferende.
+.TP
+.BR \-q ", " \-\-quiet
+Balkenreihe nicht ausgeben.
+.TP
+.BR \-v ", " \-\-verbose
+Transferdetails nach stderr protokollieren.
+.TP
+.BR \-h ", " \-\-help
+Hilfe anzeigen und beenden.
+.TP
+.B \-\-version
+Version anzeigen und beenden.
+.SH EXAMPLES
+.TP
+64-KiB-Bloecke:
+.B getbar \-b 64k https://example.com/file
+.TP
+100-ms-Intervalle, Schaetzung nach 1 s:
+.B getbar \-i 100ms \-e 1s \-q https://example.com/file
+.TP
+Blockdiagramm mit Polynom:
+.B getbar \-b 64k \-p 2 \-g /tmp/getbar.png https://example.com/file
+.TP
+Nur gnuplot-Skript speichern:
+.B getbar \-b 64k \-g /tmp/getbar.gp https://example.com/file
+.SH FILES
+.TP
+.I $XDG_CONFIG_HOME/getbar/gnuplot.rc
+Optionale gnuplot-Befehle vor dem Plot (Farben, Schriften, Gitter usw.).
+.SH AUTHOR
+Geschrieben von @PROJECT_AUTHOR@ <@PROJECT_EMAIL@>.
+.SH COPYRIGHT
+Copyright \(co @PROJECT_YEAR@.
+Lizenz AGPL-3.0-or-later.

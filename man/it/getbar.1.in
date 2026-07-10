@@ -1,0 +1,113 @@
+.TH getbar 1 "@PROJECT_YEAR@" "@PROJECT_VERSION@" "Comandi utente"
+.SH NAME
+getbar \- serie a barre del throughput di download HTTP
+.SH SYNOPSIS
+.B getbar
+.RI [ opzione ]...
+.IR URL
+.SH DESCRIPTION
+.B getbar
+scarica
+.IR URL
+con GET HTTP o HTTPS usando libcurl e registra una serie a barre su stdout.
+In modalita blocco registra le durate di ricezione per blocco in microsecondi ;
+in modalita intervallo i byte ricevuti per fetta temporale.
+.PP
+In modalita blocco la prima durata e l'attesa prima dell'arrivo dei dati ; le
+successive sono le durate di ricezione dei blocchi. In modalita intervallo
+possono comparire zeri iniziali in attesa dei dati.
+.PP
+La fine dell'output indica download completato, raggiunto
+.B \-\-window
+o
+.BR \-\-size-max ,
+o errore.
+.SH OPTIONS
+.TP
+.BR \-b ", " \-\-block-size =\fINUM\fR[kmgKMG]
+Dividere in blocchi da
+.IR NUM
+byte e registrare ogni durata di ricezione in microsecondi.
+.TP
+.BR \-i ", " \-\-interval =\fINUM\fR[um][s]
+Registrare i byte ricevuti ogni
+.IR NUM
+microsecondi, millisecondi o secondi.
+.IR NUM
+puo essere frazionario (es.
+.BR 0.1s
+o
+.BR 100.5ms ).
+.TP
+.BR \-s ", " \-\-size-max =\fINUM\fR[kmgKMG]
+Fermarsi dopo
+.IR NUM
+byte ricevuti.
+.TP
+.BR \-w ", " \-\-window =\fINUM\fR[um][s]
+Fermarsi dopo il limite di tempo.
+.TP
+.BR \-p ", " \-\-polynomial =\fIORDER\fR
+Dopo la serie, stampare una riga di adattamento polinomiale :
+.IR offset
+e coefficienti. In modalita blocco offset e il numero di blocchi zero iniziali ;
+in modalita intervallo il ritardo prima dell'inizio ricezione, in secondi.
+Con
+.BR \-\-gnuplot
+, la stessa curva viene disegnata nel grafico.
+.TP
+.BR \-g ", " \-\-gnuplot =\fIFILE\fR
+Scrivere l'output gnuplot in
+.IR FILE .
+Le estensioni
+.RB ( .png ", " .svg ", " .pdf ", " .eps )
+vengono renderizzate con gnuplot ; altrimenti si salva solo lo script (gnuplot
+non richiesto).
+Con
+.BR \-\-polynomial
+, includere la curva adattata.
+Tema opzionale da
+.IR $XDG_CONFIG_HOME /getbar/gnuplot.rc
+se presente.
+.TP
+.BR \-f ", " \-\-force
+Sovrascrivere un file di output gnuplot esistente.
+.TP
+.BR \-e ", " \-\-estimate-bps =\fINUM\fR[um][s]
+Dopo la serie, stampare la velocita di download stimata in byte/s, misurata da
+.IR NUM
+dopo l'inizio dei dati fino alla fine del trasferimento.
+.TP
+.BR \-q ", " \-\-quiet
+Non stampare la serie a barre.
+.TP
+.BR \-v ", " \-\-verbose
+Registrare i dettagli del trasferimento su stderr.
+.TP
+.BR \-h ", " \-\-help
+Mostrare l'aiuto e uscire.
+.TP
+.B \-\-version
+Mostrare la versione e uscire.
+.SH EXAMPLES
+.TP
+Blocchi da 64 KiB :
+.B getbar \-b 64k https://example.com/file
+.TP
+Intervalli da 100 ms, stima dopo 1 s :
+.B getbar \-i 100ms \-e 1s \-q https://example.com/file
+.TP
+Grafico a blocchi con polinomio :
+.B getbar \-b 64k \-p 2 \-g /tmp/getbar.png https://example.com/file
+.TP
+Salvare solo lo script gnuplot :
+.B getbar \-b 64k \-g /tmp/getbar.gp https://example.com/file
+.SH FILES
+.TP
+.I $XDG_CONFIG_HOME/getbar/gnuplot.rc
+Comandi gnuplot opzionali caricati prima del plot (colori, font, griglia, ecc.).
+.SH AUTHOR
+Scritto da @PROJECT_AUTHOR@ <@PROJECT_EMAIL@>.
+.SH COPYRIGHT
+Copyright \(co @PROJECT_YEAR@.
+Licenza AGPL-3.0-or-later.

@@ -1,0 +1,109 @@
+.TH getbar 1 "@PROJECT_YEAR@" "@PROJECT_VERSION@" "用户命令"
+.SH NAME
+getbar \- HTTP 下载吞吐量柱状序列
+.SH SYNOPSIS
+.B getbar
+.RI [ 选项 ]...
+.IR URL
+.SH DESCRIPTION
+.B getbar
+使用 libcurl 通过 HTTP 或 HTTPS GET 下载
+.IR URL
+，并在标准输出记录柱状序列。
+可使用块模式记录每块接收耗时（微秒），或间隔模式记录每个时间片接收的字节数。
+.PP
+块模式下第一个耗时为首字节到达前的等待时间；后续值为各块真实接收耗时。
+间隔模式在等待数据时可能输出前导零。
+.PP
+输出结束表示下载完成、达到
+.B \-\-window
+或
+.BR \-\-size-max
+限制，或请求失败。
+.SH OPTIONS
+.TP
+.BR \-b ", " \-\-block-size =\fINUM\fR[kmgKMG]
+按
+.IR NUM
+字节分块，记录每块接收耗时（微秒）。
+.TP
+.BR \-i ", " \-\-interval =\fINUM\fR[um][s]
+每
+.IR NUM
+微秒、毫秒或秒记录一次接收字节数。
+.IR NUM
+可为小数（例如
+.BR 0.1s
+或
+.BR 100.5ms ）。
+.TP
+.BR \-s ", " \-\-size-max =\fINUM\fR[kmgKMG]
+接收
+.IR NUM
+字节后停止。
+.TP
+.BR \-w ", " \-\-window =\fINUM\fR[um][s]
+在指定时间限制后停止。
+.TP
+.BR \-p ", " \-\-polynomial =\fIORDER\fR
+在序列之后输出多项式拟合行：
+.IR offset
+及系数。块模式下 offset 为前导零块数量；间隔模式下为开始接收前的延迟（秒）。
+若同时指定
+.BR \-\-gnuplot
+，图表中也会绘制该拟合曲线。
+.TP
+.BR \-g ", " \-\-gnuplot =\fIFILE\fR
+将 gnuplot 输出写入
+.IR FILE 。
+扩展名为
+.RB ( .png ", " .svg ", " .pdf ", " .eps )
+时使用 gnuplot 渲染；其他扩展名仅保存 gnuplot 脚本（无需安装 gnuplot）。
+若同时指定
+.BR \-\-polynomial
+，图表中包含拟合曲线。
+存在时从
+.IR $XDG_CONFIG_HOME /getbar/gnuplot.rc
+读取可选主题配置。
+.TP
+.BR \-f ", " \-\-force
+覆盖已存在的 gnuplot 输出文件。
+.TP
+.BR \-e ", " \-\-estimate-bps =\fINUM\fR[um][s]
+在序列之后输出估算下载速度（字节/秒），从数据开始到达后
+.IR NUM
+时刻起至传输结束。
+.TP
+.BR \-q ", " \-\-quiet
+不输出柱状序列。
+.TP
+.BR \-v ", " \-\-verbose
+将传输详情记录到标准错误。
+.TP
+.BR \-h ", " \-\-help
+显示帮助并退出。
+.TP
+.B \-\-version
+显示版本并退出。
+.SH EXAMPLES
+.TP
+64 KiB 块：
+.B getbar \-b 64k https://example.com/file
+.TP
+100 ms 间隔，1 s 后估算速度：
+.B getbar \-i 100ms \-e 1s \-q https://example.com/file
+.TP
+块模式图表并叠加多项式：
+.B getbar \-b 64k \-p 2 \-g /tmp/getbar.png https://example.com/file
+.TP
+保存 gnuplot 脚本而不渲染：
+.B getbar \-b 64k \-g /tmp/getbar.gp https://example.com/file
+.SH FILES
+.TP
+.I $XDG_CONFIG_HOME/getbar/gnuplot.rc
+绘图前加载的可选 gnuplot 命令（颜色、字体、网格等）。
+.SH AUTHOR
+由 @PROJECT_AUTHOR@ <@PROJECT_EMAIL@> 编写。
+.SH COPYRIGHT
+版权所有 \(co @PROJECT_YEAR@。
+许可证 AGPL-3.0-or-later。

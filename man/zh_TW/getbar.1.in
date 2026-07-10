@@ -1,0 +1,109 @@
+.TH getbar 1 "@PROJECT_YEAR@" "@PROJECT_VERSION@" "使用者命令"
+.SH NAME
+getbar \- HTTP 下載吞吐量柱狀序列
+.SH SYNOPSIS
+.B getbar
+.RI [ 選項 ]...
+.IR URL
+.SH DESCRIPTION
+.B getbar
+使用 libcurl 透過 HTTP 或 HTTPS GET 下載
+.IR URL
+，並在標準輸出記錄柱狀序列。
+可使用區塊模式記錄每塊接收耗時（微秒），或間隔模式記錄每個時間片接收的位元組數。
+.PP
+區塊模式下第一個耗時為首個位元組到達前的等待時間；後續值為各區塊真實接收耗時。
+間隔模式在等待資料時可能輸出前導零。
+.PP
+輸出結束表示下載完成、達到
+.B \-\-window
+或
+.BR \-\-size-max
+限制，或請求失敗。
+.SH OPTIONS
+.TP
+.BR \-b ", " \-\-block-size =\fINUM\fR[kmgKMG]
+依
+.IR NUM
+位元組分塊，記錄每塊接收耗時（微秒）。
+.TP
+.BR \-i ", " \-\-interval =\fINUM\fR[um][s]
+每
+.IR NUM
+微秒、毫秒或秒記錄一次接收位元組數。
+.IR NUM
+可為小數（例如
+.BR 0.1s
+或
+.BR 100.5ms ）。
+.TP
+.BR \-s ", " \-\-size-max =\fINUM\fR[kmgKMG]
+接收
+.IR NUM
+位元組後停止。
+.TP
+.BR \-w ", " \-\-window =\fINUM\fR[um][s]
+在指定時間限制後停止。
+.TP
+.BR \-p ", " \-\-polynomial =\fIORDER\fR
+在序列之後輸出多項式擬合列：
+.IR offset
+及係數。區塊模式下 offset 為前導零區塊數量；間隔模式下為開始接收前的延遲（秒）。
+若同時指定
+.BR \-\-gnuplot
+，圖表中也會繪製該擬合曲線。
+.TP
+.BR \-g ", " \-\-gnuplot =\fIFILE\fR
+將 gnuplot 輸出寫入
+.IR FILE 。
+副檔名為
+.RB ( .png ", " .svg ", " .pdf ", " .eps )
+時使用 gnuplot 渲染；其他副檔名僅儲存 gnuplot 腳本（無需安裝 gnuplot）。
+若同時指定
+.BR \-\-polynomial
+，圖表中包含擬合曲線。
+存在時從
+.IR $XDG_CONFIG_HOME /getbar/gnuplot.rc
+讀取可選主題設定。
+.TP
+.BR \-f ", " \-\-force
+覆寫已存在的 gnuplot 輸出檔。
+.TP
+.BR \-e ", " \-\-estimate-bps =\fINUM\fR[um][s]
+在序列之後輸出估算下載速度（位元組/秒），從資料開始到達後
+.IR NUM
+時刻起至傳輸結束。
+.TP
+.BR \-q ", " \-\-quiet
+不輸出柱狀序列。
+.TP
+.BR \-v ", " \-\-verbose
+將傳輸詳情記錄到標準錯誤。
+.TP
+.BR \-h ", " \-\-help
+顯示說明並退出。
+.TP
+.B \-\-version
+顯示版本並退出。
+.SH EXAMPLES
+.TP
+64 KiB 區塊：
+.B getbar \-b 64k https://example.com/file
+.TP
+100 ms 間隔，1 s 後估算速度：
+.B getbar \-i 100ms \-e 1s \-q https://example.com/file
+.TP
+區塊模式圖表並疊加多項式：
+.B getbar \-b 64k \-p 2 \-g /tmp/getbar.png https://example.com/file
+.TP
+儲存 gnuplot 腳本而不渲染：
+.B getbar \-b 64k \-g /tmp/getbar.gp https://example.com/file
+.SH FILES
+.TP
+.I $XDG_CONFIG_HOME/getbar/gnuplot.rc
+繪圖前載入的可選 gnuplot 命令（顏色、字型、網格等）。
+.SH AUTHOR
+由 @PROJECT_AUTHOR@ <@PROJECT_EMAIL@> 編寫。
+.SH COPYRIGHT
+版權所有 \(co @PROJECT_YEAR@。
+授權條款 AGPL-3.0-or-later。

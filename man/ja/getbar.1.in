@@ -1,0 +1,106 @@
+.TH getbar 1 "@PROJECT_YEAR@" "@PROJECT_VERSION@" "ユーザーコマンド"
+.SH NAME
+getbar \- HTTP ダウンロードのスループット棒系列
+.SH SYNOPSIS
+.B getbar
+.RI [ オプション ]...
+.IR URL
+.SH DESCRIPTION
+.B getbar
+は libcurl を使って HTTP または HTTPS GET で
+.IR URL
+をダウンロードし、標準出力に棒系列を記録します。
+ブロックモードでは各ブロックの受信時間（マイクロ秒）を、間隔モードでは各時間片の
+受信バイト数を記録します。
+.PP
+ブロックモードの最初の値はデータ到着前の待ち時間です。以降は各ブロックの受信時間です。
+間隔モードではデータ待ち中に先頭ゼロが出力されることがあります。
+.PP
+出力の終了は、ダウンロード完了、
+.B \-\-window
+または
+.BR \-\-size-max
+到達、または失敗を意味します。
+.SH OPTIONS
+.TP
+.BR \-b ", " \-\-block-size =\fINUM\fR[kmgKMG]
+.IR NUM
+バイトごとに分割し、各ブロックの受信時間（マイクロ秒）を記録します。
+.TP
+.BR \-i ", " \-\-interval =\fINUM\fR[um][s]
+.IR NUM
+マイクロ秒、ミリ秒、または秒ごとに受信バイト数を記録します。
+.IR NUM
+は小数も可（例:
+.BR 0.1s
+、
+.BR 100.5ms ）。
+.TP
+.BR \-s ", " \-\-size-max =\fINUM\fR[kmgKMG]
+.IR NUM
+バイト受信後に停止します。
+.TP
+.BR \-w ", " \-\-window =\fINUM\fR[um][s]
+指定時間後に停止します。
+.TP
+.BR \-p ", " \-\-polynomial =\fIORDER\fR
+系列の後に多項式フィット行を出力します:
+.IR offset
+と係数。ブロックモードでは offset は先頭ゼロブロック数、間隔モードでは受信開始前の
+遅延（秒）です。
+.BR \-\-gnuplot
+も指定した場合、同じフィットをグラフに描画します。
+.TP
+.BR \-g ", " \-\-gnuplot =\fIFILE\fR
+gnuplot 出力を
+.IR FILE
+に書き込みます。
+.RB ( .png ", " .svg ", " .pdf ", " .eps )
+拡張子は gnuplot で描画します。それ以外はスクリプトのみ保存（gnuplot 不要）。
+.BR \-\-polynomial
+も指定した場合、フィット曲線を含めます。
+存在すれば
+.IR $XDG_CONFIG_HOME /getbar/gnuplot.rc
+から任意のテーマを読み込みます。
+.TP
+.BR \-f ", " \-\-force
+既存の gnuplot 出力ファイルを上書きします。
+.TP
+.BR \-e ", " \-\-estimate-bps =\fINUM\fR[um][s]
+系列の後に推定ダウンロード速度（バイト/秒）を出力します。データ到着後
+.IR NUM
+から転送終了までを測定します。
+.TP
+.BR \-q ", " \-\-quiet
+棒系列を出力しません。
+.TP
+.BR \-v ", " \-\-verbose
+転送詳細を標準エラーに記録します。
+.TP
+.BR \-h ", " \-\-help
+ヘルプを表示して終了します。
+.TP
+.B \-\-version
+バージョンを表示して終了します。
+.SH EXAMPLES
+.TP
+64 KiB ブロック:
+.B getbar \-b 64k https://example.com/file
+.TP
+100 ms 間隔、1 s 後に速度推定:
+.B getbar \-i 100ms \-e 1s \-q https://example.com/file
+.TP
+ブロックグラフに多項式を重ねる:
+.B getbar \-b 64k \-p 2 \-g /tmp/getbar.png https://example.com/file
+.TP
+描画せず gnuplot スクリプトを保存:
+.B getbar \-b 64k \-g /tmp/getbar.gp https://example.com/file
+.SH FILES
+.TP
+.I $XDG_CONFIG_HOME/getbar/gnuplot.rc
+描画前に読み込む任意の gnuplot コマンド（色、フォント、グリッドなど）。
+.SH AUTHOR
+@PROJECT_AUTHOR@ <@PROJECT_EMAIL@> 作。
+.SH COPYRIGHT
+Copyright \(co @PROJECT_YEAR@。
+ライセンス AGPL-3.0-or-later。

@@ -1,0 +1,112 @@
+.TH getbar 1 "@PROJECT_YEAR@" "@PROJECT_VERSION@" "คำสั่งผู้ใช้"
+.SH NAME
+getbar \- ชุดแท่ง throughput สำหรับดาวน์โหลด HTTP
+.SH SYNOPSIS
+.B getbar
+.RI [ ตัวเลือก ]...
+.IR URL
+.SH DESCRIPTION
+.B getbar
+ดาวน์โหลด
+.IR URL
+ด้วย HTTP หรือ HTTPS GET ผ่าน libcurl และบันทึกชุดแท่งไปยัง stdout
+โหมดบล็อกบันทึกระยะเวลารับแต่ละบล็อกเป็นไมโครวินาที โหมดช่วงเวลาบันทึก
+ไบต์ที่รับในแต่ละช่วง
+.PP
+ในโหมดบล็อก ค่าแรกคือเวลารอก่อนข้อมูลมาถึง ค่าถัดไปคือระยะเวลารับแต่ละบล็อก
+ในโหมดช่วงเวลาอาจมีศูนย์นำหน้าขณะรอข้อมูล
+.PP
+การสิ้นสุด output หมายถึงดาวน์โหลดเสร็จ ถึง
+.B \-\-window
+หรือ
+.BR \-\-size-max
+หรือล้มเหลว
+.SH OPTIONS
+.TP
+.BR \-b ", " \-\-block-size =\fINUM\fR[kmgKMG]
+แบ่งเป็นบล็อกขนาด
+.IR NUM
+ไบต์ และบันทึกระยะเวลารับแต่ละบล็อกเป็นไมโครวินาที
+.TP
+.BR \-i ", " \-\-interval =\fINUM\fR[um][s]
+บันทึกไบต์ที่รับทุก
+.IR NUM
+ไมโครวินาที มิลลิวินาที หรือวินาที
+.IR NUM
+อาจเป็นทศนิยม (เช่น
+.BR 0.1s
+หรือ
+.BR 100.5ms )
+.TP
+.BR \-s ", " \-\-size-max =\fINUM\fR[kmgKMG]
+หยุดหลังรับ
+.IR NUM
+ไบต์
+.TP
+.BR \-w ", " \-\-window =\fINUM\fR[um][s]
+หยุดเมื่อถึงขีดจำกัดเวลา
+.TP
+.BR \-p ", " \-\-polynomial =\fIORDER\fR
+หลังชุดข้อมูล แสดงบรรทัดการปรับพหุนาม:
+.IR offset
+และสัมประสิทธิ์ ในโหมดบล็อก offset คือจำนวนบล็อกศูนย์นำหน้า
+ในโหมดช่วงเวลาเป็นความล่าช้าก่อนเริ่มรับ (วินาที)
+เมื่อใช้
+.BR \-\-gnuplot
+จะวาดเส้นเดียวกันบนกราฟ
+.TP
+.BR \-g ", " \-\-gnuplot =\fIFILE\fR
+เขียน output gnuplot ไปยัง
+.IR FILE
+นามสกุล
+.RB ( .png ", " .svg ", " .pdf ", " .eps )
+จะเรนเดอร์ด้วย gnuplot นอกนั้นบันทึกเฉพาะสคริปต์ (ไม่ต้องมี gnuplot)
+เมื่อใช้
+.BR \-\-polynomial
+จะรวมเส้นปรับ
+อ่านธีมเสริมจาก
+.IR $XDG_CONFIG_HOME /getbar/gnuplot.rc
+หากมี
+.TP
+.BR \-f ", " \-\-force
+เขียนทับไฟล์ output gnuplot ที่มีอยู่
+.TP
+.BR \-e ", " \-\-estimate-bps =\fINUM\fR[um][s]
+หลังชุดข้อมูล แสดงความเร็วดาวน์โหลดโดยประมาณ (ไบต์/วินาที)
+วัดจาก
+.IR NUM
+หลังข้อมูลเริ่มมาถึงจนถึงจบการถ่ายโอน
+.TP
+.BR \-q ", " \-\-quiet
+ไม่แสดงชุดแท่ง
+.TP
+.BR \-v ", " \-\-verbose
+บันทึกรายละเอียดการถ่ายโอนไป stderr
+.TP
+.BR \-h ", " \-\-help
+แสดงความช่วยเหลือและออก
+.TP
+.B \-\-version
+แสดงเวอร์ชันและออก
+.SH EXAMPLES
+.TP
+บล็อก 64 KiB:
+.B getbar \-b 64k https://example.com/file
+.TP
+ช่วง 100 ms ประมาณความเร็วหลัง 1 s:
+.B getbar \-i 100ms \-e 1s \-q https://example.com/file
+.TP
+กราฟบล็อกพร้อมพหุนาม:
+.B getbar \-b 64k \-p 2 \-g /tmp/getbar.png https://example.com/file
+.TP
+บันทึกสคริปต์ gnuplot โดยไม่เรนเดอร์:
+.B getbar \-b 64k \-g /tmp/getbar.gp https://example.com/file
+.SH FILES
+.TP
+.I $XDG_CONFIG_HOME/getbar/gnuplot.rc
+คำสั่ง gnuplot เสริมที่โหลดก่อนพล็อต (สี ฟอนต์ ตาราง ฯลฯ)
+.SH AUTHOR
+เขียนโดย @PROJECT_AUTHOR@ <@PROJECT_EMAIL@>
+.SH COPYRIGHT
+Copyright \(co @PROJECT_YEAR@
+สัญญาอนุญาต AGPL-3.0-or-later

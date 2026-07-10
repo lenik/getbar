@@ -1,0 +1,112 @@
+.TH getbar 1 "@PROJECT_YEAR@" "@PROJECT_VERSION@" "Lenh nguoi dung"
+.SH NAME
+getbar \- chuoi cot throughput tai HTTP
+.SH SYNOPSIS
+.B getbar
+.RI [ tuy-chon ]...
+.IR URL
+.SH DESCRIPTION
+.B getbar
+tai
+.IR URL
+bang HTTP hoac HTTPS GET qua libcurl va ghi chuoi cot ra stdout.
+Che do khoi ghi thoi gian nhan tung khoi (micro giay); che do khoang thoi gian
+ghi so byte nhan moi khoang.
+.PP
+Trong che do khoi, gia tri dau la thoi gian cho truoc khi co du lieu; cac gia tri
+sau la thoi gian nhan khoi. Che do khoang thoi gian co the in so 0 dau khi cho
+du lieu.
+.PP
+Ket thuc output nghia la tai xong, cham
+.B \-\-window
+hoac
+.BR \-\-size-max ,
+hoac that bai.
+.SH OPTIONS
+.TP
+.BR \-b ", " \-\-block-size =\fINUM\fR[kmgKMG]
+Chia thanh khoi
+.IR NUM
+byte va ghi thoi gian nhan tung khoi (micro giay).
+.TP
+.BR \-i ", " \-\-interval =\fINUM\fR[um][s]
+Ghi byte nhan moi
+.IR NUM
+micro giay, milli giay hoac giay.
+.IR NUM
+co the la so thap phan (vd.
+.BR 0.1s
+hoac
+.BR 100.5ms ).
+.TP
+.BR \-s ", " \-\-size-max =\fINUM\fR[kmgKMG]
+Dung sau khi nhan
+.IR NUM
+byte.
+.TP
+.BR \-w ", " \-\-window =\fINUM\fR[um][s]
+Dung sau gioi han thoi gian.
+.TP
+.BR \-p ", " \-\-polynomial =\fIORDER\fR
+Sau chuoi, in dong fit da thuc:
+.IR offset
+va he so. Che do khoi: offset la so khoi 0 dau; che do khoang: do tre truoc khi
+nhan (giay).
+Voi
+.BR \-\-gnuplot
+, ve cung duong cong tren bieu do.
+.TP
+.BR \-g ", " \-\-gnuplot =\fIFILE\fR
+Ghi output gnuplot vao
+.IR FILE .
+Duoi
+.RB ( .png ", " .svg ", " .pdf ", " .eps )
+duoc render bang gnuplot; khac thi chi luu script (khong can gnuplot).
+Voi
+.BR \-\-polynomial
+, bao gom duong fit.
+Doc theme tuy chon tu
+.IR $XDG_CONFIG_HOME /getbar/gnuplot.rc
+neu co.
+.TP
+.BR \-f ", " \-\-force
+Ghi de tep output gnuplot hien co.
+.TP
+.BR \-e ", " \-\-estimate-bps =\fINUM\fR[um][s]
+Sau chuoi, in toc do tai uoc tinh (byte/giay), do tu
+.IR NUM
+sau khi du lieu bat dau den den het transfer.
+.TP
+.BR \-q ", " \-\-quiet
+Khong in chuoi cot.
+.TP
+.BR \-v ", " \-\-verbose
+Ghi chi tiet transfer ra stderr.
+.TP
+.BR \-h ", " \-\-help
+In tro giup va thoat.
+.TP
+.B \-\-version
+In phien ban va thoat.
+.SH EXAMPLES
+.TP
+Khoi 64 KiB:
+.B getbar \-b 64k https://example.com/file
+.TP
+Khoang 100 ms, uoc tinh sau 1 s:
+.B getbar \-i 100ms \-e 1s \-q https://example.com/file
+.TP
+Bieu do khoi voi da thuc:
+.B getbar \-b 64k \-p 2 \-g /tmp/getbar.png https://example.com/file
+.TP
+Luu script gnuplot khong render:
+.B getbar \-b 64k \-g /tmp/getbar.gp https://example.com/file
+.SH FILES
+.TP
+.I $XDG_CONFIG_HOME/getbar/gnuplot.rc
+Lenh gnuplot tuy chon nap truoc khi ve (mau, font, luoi, v.v.).
+.SH AUTHOR
+Viet boi @PROJECT_AUTHOR@ <@PROJECT_EMAIL@>.
+.SH COPYRIGHT
+Copyright \(co @PROJECT_YEAR@.
+Giay phep AGPL-3.0-or-later.
