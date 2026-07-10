@@ -6,5 +6,6 @@ set border lc rgb '#444444'
 set key font ",11"
 set xlabel font ",11"
 set ylabel font ",11"
+set logscale y
 set style fill solid 0.6 border lc rgb '#333333'
 set obj rect from graph 0,0 to graph 1,1 behind fs solid 0.05 fc rgb '#88aaff'

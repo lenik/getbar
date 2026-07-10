@@ -90,18 +90,59 @@ Print help and exit.
 .B \-\-version
 Print version and exit.
 .SH EXAMPLES
+.SS Basic measurements
 .TP
 64 KiB blocks:
 .B getbar \-b 64k https://example.com/file
 .TP
-100 ms intervals with speed estimate after 1 s:
+100 ms intervals with speed estimate after 1 s (series hidden):
 .B getbar \-i 100ms \-e 1s \-q https://example.com/file
 .TP
-Block chart with polynomial overlay:
+Print time-to-first-byte (microseconds) from block mode:
+.B getbar \-b 64k \-s 256k https://example.com/file | awk '{print $1}'
+.SS Controlled size or duration
+.TP
+Sample 10 MiB and print steady-state B/s estimate:
+.B getbar \-i 100ms \-s 10M \-e 2s \-q https://mirror.example/file
+.TP
+Run at most 30 s (soak test):
+.B getbar \-i 1s \-w 30s \-v https://cdn.example/large.bin
+.TP
+Stop at whichever comes first, 50 MiB or 60 s:
+.B getbar \-b 1M \-s 50M \-w 60s https://example.com/file
+.SS Charts and analysis
+.TP
+Fractional interval, 3 s window, verbose, chart overwrite:
+.B getbar \-vfw3 \-i0.1s \-g /tmp/getbar.png \-f https://example.com/file
+.TP
+Block chart with quadratic polynomial overlay:
 .B getbar \-b 64k \-p 2 \-g /tmp/getbar.png https://example.com/file
+.TP
+Interval chart with polynomial overlay:
+.B getbar \-i 100ms \-p 2 \-g chart.png \-f https://example.com/file
+.TP
+Export SVG for reports:
+.B getbar \-i 200ms \-p 2 \-g report.svg \-f https://example.com/file
 .TP
 Save a gnuplot script instead of rendering:
 .B getbar \-b 64k \-g /tmp/getbar.gp https://example.com/file
+.SS Comparing mirrors
+.TP
+One estimated B/s line per URL (5 MiB sample):
+.B for url in https://mirror-a.example/file https://mirror-b.example/file; do printf '%s\\t' "$url"; getbar \-i 100ms \-s 5M \-e 1s \-q "$url"; done
+.TP
+Sort mirrors by estimated throughput (\fImirrors.txt\fR lists one URL per line):
+.B while read \-r url; do bps=$(getbar \-i 100ms \-s 5M \-e 1s \-q "$url") || continue; printf '%s\\t%s\\n' "$bps" "$url"; done < mirrors.txt | sort \-nr
+.SS Shell integration
+.TP
+Verbose logs on stderr, series on stdout:
+.B getbar \-v \-i 100ms \-s 10M https://example.com/file > series.txt
+.TP
+Save series and chart in one run:
+.B getbar \-i 100ms \-s 20M \-g run.png \-f https://example.com/file | tee series.txt
+.TP
+Rough MiB/s from the estimate line:
+.B bps=$(getbar \-i 100ms \-s 10M \-e 1s \-q https://example.com/file); awk \-v b="$bps" 'BEGIN { printf "~ %.2f MiB/s\\n", b / 1024 / 1024 }'
 .SH FILES
 .TP
 .I $XDG_CONFIG_HOME/getbar/gnuplot.rc
