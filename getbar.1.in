@@ -13,8 +13,20 @@ with HTTP or HTTPS GET using libcurl and records a bar series on standard output
 Use block mode to record per-block receive durations in microseconds, or interval
 mode to record bytes received per time slice.
 .PP
-The first duration in block mode is the wait before data arrives; later values are
-real block durations. Interval mode may print leading zeros while waiting for data.
+By default the full timeline is recorded, including connection and server delay
+(TTFB in block mode, leading zero intervals in interval mode). Polynomial
+.BR \-p
+offset is zero unless
+.B \-d
+is set.
+.PP
+With
+.BR \-d ", pre-data wait is omitted from the bar series, "
+.BR \-w ", "
+.BR \-c ", and the polynomial fit; "
+.BR \-p
+offset then reports the stripped delay (seconds in interval mode, preamble bar
+count in block mode).
 .PP
 End of output means the download completed, hit
 .B \-\-window
@@ -44,14 +56,17 @@ Stop after receiving
 bytes.
 .TP
 .BR \-w ", " \-\-window =\fINUM\fR[um][s]
-Stop after the given time limit.
+Stop after the given time limit. With
+.BR \-d ,
+the limit applies only after data starts arriving.
 .TP
 .BR \-p ", " \-\-polynomial =\fIORDER\fR
 After the series, print a polynomial fit line:
 .IR offset
-followed by coefficients. In block mode the offset is the count of leading zero
-block durations; in interval mode it is the delay before receiving starts, in
-seconds. The same fit is drawn on the
+followed by coefficients. By default offset is zero; with
+.BR \-d ,
+offset is the stripped pre-data delay (seconds in interval mode, preamble bar
+count in block mode). The same fit is drawn on the
 .BR \-\-gnuplot
 chart when this option is given.
 .TP
@@ -78,6 +93,27 @@ from
 .IR NUM
 after data starts arriving until the transfer ends.
 .TP
+.BR \-c ", " \-\-count
+After the series, print one summary line:
+.IR series-count size-bytes duration-usec bytes-per-second .
+.IR series-count
+is the number of bar values;
+.IR size-bytes
+is total bytes received;
+.IR duration-usec
+is wall-clock transfer time from the measurement origin to finish (from
+connection start unless
+.B \-d
+is set);
+.IR bytes-per-second
+is average throughput over that duration.
+.TP
+.BR \-d ", " \-\-delay-started
+Omit pre-data wait from the bar series and from
+.BR \-w ", " \-c ", and the polynomial fit. "
+.BR \-p
+offset reports the stripped delay.
+.TP
 .BR \-q ", " \-\-quiet
 Do not print the bar series.
 .TP
@@ -97,6 +133,13 @@ Print version and exit.
 .TP
 100 ms intervals with speed estimate after 1 s (series hidden):
 .B getbar \-i 100ms \-e 1s \-q https://example.com/file
+.TP
+Summary line after interval series:
+.B getbar \-i 100ms \-c https://example.com/file
+.br
+Output ends with a line such as
+.IR "20 1048576 1523400 688421"
+(number of bars, bytes, microseconds, B/s).
 .TP
 Print time-to-first-byte (microseconds) from block mode:
 .B getbar \-b 64k \-s 256k https://example.com/file | awk '{print $1}'

@@ -65,6 +65,8 @@ struct transfer {
     uint64_t estimate_delay_us;
     bool interval_mode;
     bool quiet;
+    bool count;
+    bool delay_started;
     bool verbose;
     bool force;
     char *gnuplot_output;
@@ -86,6 +88,7 @@ struct transfer {
     bool estimate_set;
     bool stopped;
     bool interval_closed;
+    size_t series_printed_idx;
     CURLcode curl_result;
 };
 
@@ -137,6 +140,9 @@ static int series_push(struct series *s, uint64_t value) {
     s->values[s->len++] = value;
     return 0;
 }
+
+static int series_push_live(struct transfer *t, uint64_t value);
+static void emit_new_series_values(struct transfer *t);
 
 static int parse_size(const char *text, uint64_t *out) {
     char *end = NULL;
@@ -241,14 +247,18 @@ static uint64_t interval_flush_cap(const struct transfer *t, uint64_t now) {
     return now;
 }
 
-static void flush_intervals(struct transfer *t, uint64_t now) {
+static void flush_intervals(struct transfer *t, uint64_t now, bool live_emit) {
     if (t->interval_closed) {
         return;
     }
 
     now = interval_flush_cap(t, now);
     while (now >= t->next_interval_us) {
-        if (series_push(&t->series, t->interval_bytes) != 0) {
+        if (live_emit) {
+            if (series_push_live(t, t->interval_bytes) != 0) {
+                die("out of memory");
+            }
+        } else if (series_push(&t->series, t->interval_bytes) != 0) {
             die("out of memory");
         }
         t->interval_bytes = 0;
@@ -263,6 +273,25 @@ static void trim_trailing_zero_intervals(struct transfer *t) {
     while (t->series.len > 0 && t->series.values[t->series.len - 1] == 0) {
         t->series.len--;
     }
+}
+
+static uint64_t measure_origin_us(const struct transfer *t) {
+    if (t->delay_started && t->first_byte_us > 0) {
+        return t->first_byte_us;
+    }
+    return t->start_us;
+}
+
+static bool window_expired(const struct transfer *t, uint64_t now) {
+    if (t->window_us == 0) {
+        return false;
+    }
+    if (t->delay_started && t->first_byte_us == 0) {
+        return false;
+    }
+    const uint64_t origin = measure_origin_us(t);
+
+    return now >= origin && now - origin >= t->window_us;
 }
 
 static void note_estimate(struct transfer *t, uint64_t now) {
@@ -289,12 +318,12 @@ static int progress_cb(void *userdata, curl_off_t dltotal, curl_off_t dlnow, cur
     if (t->stopped) {
         return 1;
     }
-    if (t->window_us > 0 && now - t->start_us >= t->window_us) {
+    if (window_expired(t, now)) {
         t->stopped = true;
         return 1;
     }
     if (t->interval_mode) {
-        flush_intervals(t, now);
+        flush_intervals(t, now, true);
     }
     note_estimate(t, now);
     return 0;
@@ -317,7 +346,7 @@ static size_t write_cb(char *ptr, size_t size, size_t nmemb, void *userdata) {
     if (t->stopped) {
         return 0;
     }
-    if (t->window_us > 0 && now - t->start_us >= t->window_us) {
+    if (window_expired(t, now)) {
         t->stopped = true;
         return 0;
     }
@@ -331,7 +360,7 @@ static size_t write_cb(char *ptr, size_t size, size_t nmemb, void *userdata) {
     if (t->first_byte_us == 0) {
         t->first_byte_us = now;
         if (!t->interval_mode) {
-            if (series_push(&t->series, now - t->start_us) != 0) {
+            if (series_push_live(t, now - t->start_us) != 0) {
                 die("out of memory");
             }
             t->block_start_us = now;
@@ -340,7 +369,7 @@ static size_t write_cb(char *ptr, size_t size, size_t nmemb, void *userdata) {
     }
 
     if (t->interval_mode) {
-        flush_intervals(t, now);
+        flush_intervals(t, now, true);
         t->interval_bytes += (uint64_t)n;
     } else {
         size_t left = n;
@@ -350,7 +379,7 @@ static size_t write_cb(char *ptr, size_t size, size_t nmemb, void *userdata) {
             t->bytes_in_block += (uint64_t)chunk;
             left -= chunk;
             if (t->bytes_in_block >= t->block_size) {
-                if (series_push(&t->series, now - t->block_start_us) != 0) {
+                if (series_push_live(t, now - t->block_start_us) != 0) {
                     die("out of memory");
                 }
                 t->block_start_us = now;
@@ -377,7 +406,7 @@ static void finish_interval_series(struct transfer *t) {
         t->interval_flush_limit_us = t->eof_us + INTERVAL_EOF_SAFE_US;
     }
 
-    flush_intervals(t, now);
+    flush_intervals(t, now, false);
 
     if (t->interval_bytes > 0 && t->next_interval_us <= t->interval_flush_limit_us) {
         if (series_push(&t->series, t->interval_bytes) != 0) {
@@ -395,21 +424,9 @@ static void finish_transfer(struct transfer *t) {
     if (t->interval_mode) {
         finish_interval_series(t);
     } else if (t->bytes_in_block > 0 && t->block_start_us > 0) {
-        if (series_push(&t->series, t->end_us - t->block_start_us) != 0) {
+        if (series_push_live(t, t->end_us - t->block_start_us) != 0) {
             die("out of memory");
         }
-    }
-}
-
-static void print_series(const struct transfer *t) {
-    for (size_t i = 0; i < t->series.len; i++) {
-        if (i > 0) {
-            putchar(' ');
-        }
-        printf("%" PRIu64, t->series.values[i]);
-    }
-    if (t->series.len > 0) {
-        putchar('\n');
     }
 }
 
@@ -424,13 +441,52 @@ static size_t count_leading_zeros(const struct series *s, size_t start) {
     return n;
 }
 
-static size_t series_plot_start(const struct transfer *t) {
+static size_t series_data_start(const struct transfer *t) {
+    if (!t->delay_started) {
+        return 0;
+    }
     if (t->interval_mode) {
         return count_leading_zeros(&t->series, 0);
     }
-    const size_t start = 1;
+    if (t->series.len == 0) {
+        return 0;
+    }
+    return 1 + count_leading_zeros(&t->series, 1);
+}
 
-    return start + count_leading_zeros(&t->series, start);
+static void emit_new_series_values(struct transfer *t) {
+    if (t->quiet) {
+        return;
+    }
+
+    const size_t start = series_data_start(t);
+    if (t->series_printed_idx < start) {
+        t->series_printed_idx = start;
+    }
+    while (t->series_printed_idx < t->series.len) {
+        if (t->series_printed_idx > start) {
+            putchar(' ');
+        }
+        printf("%" PRIu64, t->series.values[t->series_printed_idx]);
+        fflush(stdout);
+        t->series_printed_idx++;
+    }
+}
+
+static void finish_series_output(const struct transfer *t) {
+    if (t->quiet || t->series_printed_idx <= series_data_start(t)) {
+        return;
+    }
+    putchar('\n');
+    fflush(stdout);
+}
+
+static int series_push_live(struct transfer *t, uint64_t value) {
+    if (series_push(&t->series, value) != 0) {
+        return -1;
+    }
+    emit_new_series_values(t);
+    return 0;
 }
 
 static int solve_linear(int n, double a[], double b[]) {
@@ -553,15 +609,26 @@ static int compute_poly(const struct transfer *t, struct poly_result *poly) {
     }
 
     if (t->interval_mode) {
-        start = series_plot_start(t);
-        lead = start;
-        n = t->series.len - start;
-        poly->offset = (double)lead * (double)t->interval_us / 1000000.0;
-        poly->x_origin = poly->offset;
         poly->x_step = (double)t->interval_us / 1000000.0;
-        for (size_t i = 0; i < n; i++) {
-            xs[i] = (double)i * poly->x_step;
-            ys[i] = (double)t->series.values[start + i];
+        if (t->delay_started) {
+            lead = count_leading_zeros(&t->series, 0);
+            start = lead;
+            n = t->series.len - start;
+            poly->offset = (double)lead * poly->x_step;
+            poly->x_origin = 0.0;
+            for (size_t i = 0; i < n; i++) {
+                xs[i] = (double)i * poly->x_step;
+                ys[i] = (double)t->series.values[start + i];
+            }
+        } else {
+            start = 0;
+            n = t->series.len;
+            poly->offset = 0.0;
+            poly->x_origin = 0.0;
+            for (size_t i = 0; i < n; i++) {
+                xs[i] = (double)i * poly->x_step;
+                ys[i] = (double)t->series.values[i];
+            }
         }
     } else {
         if (t->series.len < 2) {
@@ -569,11 +636,18 @@ static int compute_poly(const struct transfer *t, struct poly_result *poly) {
             free(ys);
             return 0;
         }
-        start = series_plot_start(t);
-        lead = start - 1;
-        n = t->series.len - start;
-        poly->offset = (double)lead;
-        poly->x_origin = (double)start;
+        if (t->delay_started) {
+            lead = count_leading_zeros(&t->series, 1);
+            start = 1 + lead;
+            n = t->series.len - start;
+            poly->offset = (double)(1 + lead);
+            poly->x_origin = 0.0;
+        } else {
+            start = 1;
+            n = t->series.len - start;
+            poly->offset = 0.0;
+            poly->x_origin = 0.0;
+        }
         poly->x_step = 1.0;
         for (size_t i = 0; i < n; i++) {
             xs[i] = (double)i;
@@ -731,16 +805,22 @@ static void write_gnuplot_script(FILE *gp, const struct transfer *t, const struc
 
     if (t->interval_mode) {
         const double step = (double)t->interval_us / 1000000.0;
-        const size_t plot_start = series_plot_start(t);
+        const size_t plot_start = series_data_start(t);
 
-        for (size_t i = plot_start; i < t->series.len; i++) {
-            fprintf(gp, "%g %g\n", (double)i * step, (double)t->series.values[i]);
+        for (size_t j = 0; j + plot_start < t->series.len; j++) {
+            const size_t i = plot_start + j;
+            const double x = t->delay_started ? (double)j * step : (double)i * step;
+
+            fprintf(gp, "%g %g\n", x, (double)t->series.values[i]);
         }
     } else {
-        const size_t plot_start = series_plot_start(t);
+        const size_t plot_start = series_data_start(t);
 
-        for (size_t i = plot_start; i < t->series.len; i++) {
-            fprintf(gp, "%zu %g\n", i, (double)t->series.values[i] / 1000000.0);
+        for (size_t j = 0; j + plot_start < t->series.len; j++) {
+            const size_t i = plot_start + j;
+            const double x = t->delay_started ? (double)j : (double)i;
+
+            fprintf(gp, "%g %g\n", x, (double)t->series.values[i] / 1000000.0);
         }
     }
     fputs("e\n", gp);
@@ -809,6 +889,22 @@ static void print_estimate(const struct transfer *t) {
     printf("%.0f\n", bps);
 }
 
+static void print_count(const struct transfer *t) {
+    const size_t data_start = series_data_start(t);
+    const uint64_t origin = measure_origin_us(t);
+    const uint64_t duration_us = t->end_us > origin ? t->end_us - origin : 0;
+    double bps = 0.0;
+
+    if (duration_us > 0) {
+        bps = (double)t->total_bytes * 1000000.0 / (double)duration_us;
+    }
+    printf("%zu %" PRIu64 " %" PRIu64 " %.0f\n",
+           t->series.len - data_start,
+           t->total_bytes,
+           duration_us,
+           bps);
+}
+
 static void usage(FILE *out) {
     fputs(_("Usage: getbar [OPTION]... URL\n"
             "Download URL with HTTP(S) GET and record throughput bars.\n"),
@@ -830,6 +926,10 @@ static void usage(FILE *out) {
     fputs(_("overwrite gnuplot output file\n"), out);
     fputs("  -e, --estimate-bps=NUM[um][s]  ", out);
     fputs(_("output estimated bytes/sec after delay\n"), out);
+    fputs("  -c, --count                    ", out);
+    fputs(_("print summary after series: count size duration bps\n"), out);
+    fputs("  -d, --delay-started            ", out);
+    fputs(_("omit pre-data wait from series, window, count; set -p offset\n"), out);
     fputs("  -v, --verbose                  ", out);
     fputs(_("more logging to stderr\n"), out);
     fputs("  -q, --quiet                    ", out);
@@ -839,10 +939,12 @@ static void usage(FILE *out) {
     fputs("      --version                  ", out);
     fputs(_("output version information and exit\n"), out);
     fputs("\n", out);
-    fputs(_("Block mode (-b) prints per-block durations in microseconds. The first value is\n"
-            "the wait before data arrives; later values are block receive durations.\n"
-            "Interval mode (-i) prints bytes received per interval (leading zeros mean no\n"
-            "data yet). Polynomial and estimate lines are printed after the series.\n"
+    fputs(_("Block mode (-b) prints per-block durations in microseconds. By default\n"
+            "the first value is the wait before data arrives. With -d that wait is\n"
+            "omitted from the series and derived metrics; -p then reports the delay\n"
+            "as offset. Interval mode (-i) includes leading zero intervals by default;\n"
+            "with -d they are omitted and -p offset is the idle time in seconds.\n"
+            "Polynomial, count, and estimate lines are printed after the series.\n"
             "Optional theming: $XDG_CONFIG_HOME/getbar/gnuplot.rc\n"),
           out);
     fprintf(out, _("Report bugs to: <%s>\n"), PROJECT_EMAIL);
@@ -861,7 +963,7 @@ static void version(void) {
     fputs(_("There is NO WARRANTY, to the extent permitted by law.\n"), stdout);
 }
 
-#define SHORT_OPTS "b:i:s:w:p:g:fe:vqh"
+#define SHORT_OPTS "b:i:s:w:p:g:fe:cdvqh"
 
 struct argv_buf {
     char **items;
@@ -1029,6 +1131,8 @@ int main(int argc, char **argv) {
         {"gnuplot", required_argument, NULL, 'g'},
         {"force", no_argument, NULL, 'f'},
         {"estimate-bps", required_argument, NULL, 'e'},
+        {"count", no_argument, NULL, 'c'},
+        {"delay-started", no_argument, NULL, 'd'},
         {"verbose", no_argument, NULL, 'v'},
         {"quiet", no_argument, NULL, 'q'},
         {"help", no_argument, NULL, 'h'},
@@ -1101,6 +1205,12 @@ int main(int argc, char **argv) {
             if (parse_time_us(optarg, &t.estimate_delay_us) != 0) {
                 die("invalid estimate delay");
             }
+            break;
+        case 'c':
+            t.count = true;
+            break;
+        case 'd':
+            t.delay_started = true;
             break;
         case 'v':
             t.verbose = true;
@@ -1177,13 +1287,17 @@ int main(int argc, char **argv) {
     curl_easy_setopt(easy, CURLOPT_PROGRESSDATA, &t);
 #endif
     curl_easy_setopt(easy, CURLOPT_NOSIGNAL, 1L);
-    if (t.window_us > 0) {
+    if (t.window_us > 0 && !t.delay_started) {
         const long timeout_ms = (long)((t.window_us + 999) / 1000);
         curl_easy_setopt(easy, CURLOPT_TIMEOUT_MS, timeout_ms);
     }
 
     if (t.verbose) {
         fprintf(stderr, _("%s: GET %s\n"), exe, t.url);
+    }
+
+    if (!t.quiet) {
+        setvbuf(stdout, NULL, _IONBF, 0);
     }
 
     t.curl_result = curl_easy_perform(easy);
@@ -1203,8 +1317,10 @@ int main(int argc, char **argv) {
     curl_easy_cleanup(easy);
     curl_global_cleanup();
 
-    if (!t.quiet) {
-        print_series(&t);
+    emit_new_series_values(&t);
+    finish_series_output(&t);
+    if (t.count) {
+        print_count(&t);
     }
 
     struct poly_result poly;
