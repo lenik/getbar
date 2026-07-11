@@ -2,110 +2,125 @@ msgid ""
 msgstr ""
 "Project-Id-Version: getbar\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-10 17:51+0800\n"
+"POT-Creation-Date: 2026-07-11 23:11+0800\n"
 "Language: ja\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/getbar.c:775
+#: src/getbar.c:829
+#, c-format
 msgid "%s: wrote chart %s\n"
 msgstr "%s: チャート %s を書き込みました\n"
 
-#: src/getbar.c:791
+#: src/getbar.c:845
 #, c-format
 msgid "%s: wrote gnuplot script %s\n"
 msgstr "%s: gnuplot スクリプト %s を書き込みました\n"
 
-#: src/getbar.c:813
+#: src/getbar.c:883
 msgid ""
 "Usage: getbar [OPTION]... URL\n"
 "Download URL with HTTP(S) GET and record throughput bars.\n"
-msgstr "用法: getbar [オプション]... URL\nHTTP(S) GET で URL をダウンロードし、スループットの棒グラフ系列を記録します。\n"
+msgstr ""
+"用法: getbar [オプション]... URL\n"
+"HTTP(S) GET で URL をダウンロードし、スループットの棒グラフ系列を記録しま"
+"す。\n"
 
-#: src/getbar.c:818
+#: src/getbar.c:888
 msgid "split by received block size\n"
 msgstr "受信ブロックサイズで分割\n"
 
-#: src/getbar.c:820
+#: src/getbar.c:890
 msgid "split by time interval (NUM may be fractional)\n"
 msgstr "時間間隔で分割（NUM は小数可）\n"
 
-#: src/getbar.c:822
+#: src/getbar.c:892
 msgid "stop after receiving NUM bytes\n"
 msgstr "NUM バイト受信後に停止\n"
 
-#: src/getbar.c:824
+#: src/getbar.c:894
 msgid "stop after timeout\n"
 msgstr "タイムアウト後に停止\n"
 
-#: src/getbar.c:826
+#: src/getbar.c:896
 msgid "output offset and polynomial coeffs\n"
 msgstr "オフセットと多項式係数を出力\n"
 
-#: src/getbar.c:828
+#: src/getbar.c:898
 msgid "render chart (.png/.svg/.pdf/.eps) or save script\n"
 msgstr "チャートを描画（.png/.svg/.pdf/.eps）またはスクリプトを保存\n"
 
-#: src/getbar.c:830
+#: src/getbar.c:900
 msgid "overwrite gnuplot output file\n"
 msgstr "gnuplot 出力ファイルを上書き\n"
 
-#: src/getbar.c:832
+#: src/getbar.c:902
 msgid "output estimated bytes/sec after delay\n"
 msgstr "遅延後に推定バイト/秒を出力\n"
 
-#: src/getbar.c:834
+#: src/getbar.c:904
+msgid "print summary after series: count size duration bps\n"
+msgstr "系列の後に概要を表示: 件数 サイズ 時間 bps\n"
+
+#: src/getbar.c:906
+msgid "omit pre-data wait from series, window, count; set -p offset\n"
+msgstr "系列・ウィンドウ・件数からデータ前待機を省略; -p オフセットを設定\n"
+
+#: src/getbar.c:908
 msgid "more logging to stderr\n"
 msgstr "stderr により多くのログを出力\n"
 
-#: src/getbar.c:836
+#: src/getbar.c:910
 msgid "omit the bar series on stdout\n"
 msgstr "stdout に棒系列を出力しない\n"
 
-#: src/getbar.c:838
+#: src/getbar.c:912
 msgid "display this help and exit\n"
 msgstr "このヘルプを表示して終了\n"
 
-#: src/getbar.c:840
+#: src/getbar.c:914
 msgid "output version information and exit\n"
 msgstr "バージョン情報を表示して終了\n"
 
-#: src/getbar.c:842
+#: src/getbar.c:916
 msgid ""
-"Block mode (-b) prints per-block durations in microseconds. The first value "
-"is\n"
-"the wait before data arrives; later values are block receive durations.\n"
-"Interval mode (-i) prints bytes received per interval (leading zeros mean "
-"no\n"
-"data yet). Polynomial and estimate lines are printed after the series.\n"
+"Block mode (-b) prints per-block durations in microseconds. By default\n"
+"the first value is the wait before data arrives. With -d that wait is\n"
+"omitted from the series and derived metrics; -p then reports the delay\n"
+"as offset. Interval mode (-i) includes leading zero intervals by default;\n"
+"with -d they are omitted and -p offset is the idle time in seconds.\n"
+"Polynomial, count, and estimate lines are printed after the series.\n"
 "Optional theming: $XDG_CONFIG_HOME/getbar/gnuplot.rc\n"
-msgstr "ブロックモード（-b）は各ブロックの受信時間（マイクロ秒）を出力します。最初の値はデータ到着前の待ち時間、以降は各ブロックの受信時間です。\n間隔モード（-i）は各間隔で受信したバイト数を出力します（先頭のゼロはまだデータがないことを意味します）。\n多項式と推定行は系列の後に出力されます。\n任意のテーマ: $XDG_CONFIG_HOME/getbar/gnuplot.rc\n"
+msgstr ""
+"ブロックモード (-b) は各ブロックの受信時間をマイクロ秒で出力します。既定では最初の値はデータ到着前の待機時間です。-d を付けると系列と派生指標からその待機が省略され、-p は遅延をオフセットとして報告します。間隔モード (-i) は既定で先頭ゼロ間隔を含みます。-d ではそれらを省略し、-p オフセットは秒単位のアイドル時間です。\n"
+"多項式・件数・推定行は系列の後に出力されます。\n"
+"任意のテーマ: $XDG_CONFIG_HOME/getbar/gnuplot.rc\n"
 
-#: src/getbar.c:848
+#: src/getbar.c:924
 #, c-format
 msgid "Report bugs to: <%s>\n"
 msgstr "不具合報告先: <%s>\n"
 
-#: src/getbar.c:853
+#: src/getbar.c:929
 #, c-format
 msgid "Copyright (C) %d %s\n"
 msgstr "Copyright (C) %d %s\n"
 
-#: src/getbar.c:854
+#: src/getbar.c:930
 msgid ""
 "License AGPL-3.0-or-later: <https://www.gnu.org/licenses/agpl-3.0.html>\n"
 msgstr ""
 "ライセンス AGPL-3.0-or-later: <https://www.gnu.org/licenses/agpl-3.0.html>\n"
 
-#: src/getbar.c:856
+#: src/getbar.c:932
 msgid "This is free software: you are free to change and redistribute it.\n"
 msgstr "これはフリーソフトウェアです。自由に改変および再配布できます。\n"
 
-#: src/getbar.c:857
+#: src/getbar.c:933
 msgid "This project opposes AI exploitation and AI hegemony.\n"
 msgstr "このプロジェクトは AI 搾取と AI 覇権に反対します。\n"
 
-#: src/getbar.c:858
+#: src/getbar.c:934
 msgid ""
 "This project rejects mindless MIT-style licensing and politically naive BSD-"
 "style licensing.\n"
@@ -113,21 +128,21 @@ msgstr ""
 "このプロジェクトは無批判な MIT 型ライセンスと政治的に愚かな BSD 型ライセンス"
 "に反対します。\n"
 
-#: src/getbar.c:861
+#: src/getbar.c:937
 msgid "There is NO WARRANTY, to the extent permitted by law.\n"
 msgstr "法の許す範囲で一切の保証はありません。\n"
 
-#: src/getbar.c:1186
+#: src/getbar.c:1270
 #, c-format
 msgid "%s: GET %s\n"
 msgstr "%s: GET %s\n"
 
-#: src/getbar.c:1193
+#: src/getbar.c:1277
 #, c-format
 msgid "%s: received %<PRIu64> bytes"
 msgstr "%s: %<PRIu64> バイト受信"
 
-#: src/getbar.c:1198
+#: src/getbar.c:1282
 msgid " [stopped early]"
 msgstr " [早期停止]"
 
@@ -135,6 +150,22 @@ msgstr " [早期停止]"
 #, c-format
 msgid "%s: write error\n"
 msgstr "%s: 書き込みエラー\n"
+
+#~ msgid ""
+#~ "Block mode (-b) prints per-block durations in microseconds. The first "
+#~ "value is\n"
+#~ "the wait before data arrives; later values are block receive durations.\n"
+#~ "Interval mode (-i) prints bytes received per interval (leading zeros mean "
+#~ "no\n"
+#~ "data yet). Polynomial and estimate lines are printed after the series.\n"
+#~ "Optional theming: $XDG_CONFIG_HOME/getbar/gnuplot.rc\n"
+#~ msgstr ""
+#~ "ブロックモード（-b）は各ブロックの受信時間（マイクロ秒）を出力します。最初"
+#~ "の値はデータ到着前の待ち時間、以降は各ブロックの受信時間です。\n"
+#~ "間隔モード（-i）は各間隔で受信したバイト数を出力します（先頭のゼロはまだ"
+#~ "データがないことを意味します）。\n"
+#~ "多項式と推定行は系列の後に出力されます。\n"
+#~ "任意のテーマ: $XDG_CONFIG_HOME/getbar/gnuplot.rc\n"
 
 #~ msgid ""
 #~ "Usage: getbar [OPTION]... [FILE]...\n"

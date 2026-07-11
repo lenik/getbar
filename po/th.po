@@ -2,131 +2,145 @@ msgid ""
 msgstr ""
 "Project-Id-Version: getbar\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-10 17:51+0800\n"
+"POT-Creation-Date: 2026-07-11 23:11+0800\n"
 "Language: th\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/getbar.c:775
+#: src/getbar.c:829
+#, c-format
 msgid "%s: wrote chart %s\n"
 msgstr "%s: เขียนแผนภูมิ %s แล้ว\n"
 
-#: src/getbar.c:791
+#: src/getbar.c:845
 #, c-format
 msgid "%s: wrote gnuplot script %s\n"
 msgstr "%s: เขียนสคริปต์ gnuplot %s แล้ว\n"
 
-#: src/getbar.c:813
+#: src/getbar.c:883
 msgid ""
 "Usage: getbar [OPTION]... URL\n"
 "Download URL with HTTP(S) GET and record throughput bars.\n"
-msgstr "การใช้งาน: getbar [ตัวเลือก]... URL\nดาวน์โหลด URL ด้วย HTTP(S) GET และบันทึกชุดแท่งกราฟ throughput\n"
+msgstr ""
+"การใช้งาน: getbar [ตัวเลือก]... URL\n"
+"ดาวน์โหลด URL ด้วย HTTP(S) GET และบันทึกชุดแท่งกราฟ throughput\n"
 
-#: src/getbar.c:818
+#: src/getbar.c:888
 msgid "split by received block size\n"
 msgstr "แบ่งตามขนาดบล็อกที่รับ\n"
 
-#: src/getbar.c:820
+#: src/getbar.c:890
 msgid "split by time interval (NUM may be fractional)\n"
 msgstr "แบ่งตามช่วงเวลา (NUM อาจเป็นทศนิยม)\n"
 
-#: src/getbar.c:822
+#: src/getbar.c:892
 msgid "stop after receiving NUM bytes\n"
 msgstr "หยุดหลังรับ NUM ไบต์\n"
 
-#: src/getbar.c:824
+#: src/getbar.c:894
 msgid "stop after timeout\n"
 msgstr "หยุดเมื่อหมดเวลา\n"
 
-#: src/getbar.c:826
+#: src/getbar.c:896
 msgid "output offset and polynomial coeffs\n"
 msgstr "แสดง offset และสัมประสิทธิ์พหุนาม\n"
 
-#: src/getbar.c:828
+#: src/getbar.c:898
 msgid "render chart (.png/.svg/.pdf/.eps) or save script\n"
 msgstr "เรนเดอร์แผนภูมิ (.png/.svg/.pdf/.eps) หรือบันทึกสคริปต์\n"
 
-#: src/getbar.c:830
+#: src/getbar.c:900
 msgid "overwrite gnuplot output file\n"
 msgstr "เขียนทับไฟล์เอาต์พุต gnuplot\n"
 
-#: src/getbar.c:832
+#: src/getbar.c:902
 msgid "output estimated bytes/sec after delay\n"
 msgstr "แสดงไบต์/วินาทีโดยประมาณหลังหน่วงเวลา\n"
 
-#: src/getbar.c:834
+#: src/getbar.c:904
+msgid "print summary after series: count size duration bps\n"
+msgstr "แสดงสรุปหลังชุดข้อมูล: จำนวน ขนาด ระยะเวลา bps\n"
+
+#: src/getbar.c:906
+msgid "omit pre-data wait from series, window, count; set -p offset\n"
+msgstr "ละการรอก่อนข้อมูลออกจากชุด หน้าต่าง การนับ; ตั้ง offset -p\n"
+
+#: src/getbar.c:908
 msgid "more logging to stderr\n"
 msgstr "แสดงบันทึกเพิ่มเติมไป stderr\n"
 
-#: src/getbar.c:836
+#: src/getbar.c:910
 msgid "omit the bar series on stdout\n"
 msgstr "ไม่แสดงชุดแท่งบน stdout\n"
 
-#: src/getbar.c:838
+#: src/getbar.c:912
 msgid "display this help and exit\n"
 msgstr "แสดงความช่วยเหลือนี้และออก\n"
 
-#: src/getbar.c:840
+#: src/getbar.c:914
 msgid "output version information and exit\n"
 msgstr "แสดงข้อมูลเวอร์ชันและออก\n"
 
-#: src/getbar.c:842
+#: src/getbar.c:916
 msgid ""
-"Block mode (-b) prints per-block durations in microseconds. The first value "
-"is\n"
-"the wait before data arrives; later values are block receive durations.\n"
-"Interval mode (-i) prints bytes received per interval (leading zeros mean "
-"no\n"
-"data yet). Polynomial and estimate lines are printed after the series.\n"
+"Block mode (-b) prints per-block durations in microseconds. By default\n"
+"the first value is the wait before data arrives. With -d that wait is\n"
+"omitted from the series and derived metrics; -p then reports the delay\n"
+"as offset. Interval mode (-i) includes leading zero intervals by default;\n"
+"with -d they are omitted and -p offset is the idle time in seconds.\n"
+"Polynomial, count, and estimate lines are printed after the series.\n"
 "Optional theming: $XDG_CONFIG_HOME/getbar/gnuplot.rc\n"
-msgstr "โหมดบล็อก (-b) แสดงระยะเวลารับแต่ละบล็อกเป็นไมโครวินาที ค่าแรกคือเวลารอก่อนข้อมูลมาถึง ค่าถัดไปคือระยะเวลารับแต่ละบล็อก\nโหมดช่วงเวลา (-i) แสดงไบต์ที่รับในแต่ละช่วง (ศูนย์นำหน้าหมายถึงยังไม่มีข้อมูล)\nบรรทัดพหุนามและการประมาณจะแสดงหลังชุดข้อมูล\nธีมเสริม: $XDG_CONFIG_HOME/getbar/gnuplot.rc\n"
+msgstr ""
+"โหมดบล็อก (-b) แสดงระยะเวลาต่อบล็อกเป็นไมโครวินาที ตามค่าเริ่มต้น ค่าแรกคือเวลารอก่อนข้อมูลมาถึง ด้วย -d การรอนั้นจะถูกตัดออกจากชุดและเมตริกที่ได้มา -p จะรายงานความล่าช้าเป็น offset โหมดช่วงเวลา (-i) รวมช่วงศูนย์นำหน้าโดยค่าเริ่มต้น ด้วย -d จะถูกตัดออกและ offset -p คือเวลาว่างเป็นวินาที\n"
+"บรรทัดพหุนาม การนับ และการประมาณจะพิมพ์หลังชุดข้อมูล\n"
+"ธีมเสริม: $XDG_CONFIG_HOME/getbar/gnuplot.rc\n"
 
-#: src/getbar.c:848
+#: src/getbar.c:924
 #, c-format
 msgid "Report bugs to: <%s>\n"
 msgstr "รายงานบั๊กไปที่: <%s>\n"
 
-#: src/getbar.c:853
+#: src/getbar.c:929
 #, c-format
 msgid "Copyright (C) %d %s\n"
 msgstr "ลิขสิทธิ์ (C) %d %s\n"
 
-#: src/getbar.c:854
+#: src/getbar.c:930
 msgid ""
 "License AGPL-3.0-or-later: <https://www.gnu.org/licenses/agpl-3.0.html>\n"
 msgstr ""
 "สัญญาอนุญาต AGPL-3.0-or-later: <https://www.gnu.org/licenses/agpl-3.0.html>\n"
 
-#: src/getbar.c:856
+#: src/getbar.c:932
 msgid "This is free software: you are free to change and redistribute it.\n"
 msgstr "นี่คือซอฟต์แวร์เสรี คุณมีสิทธิ์แก้ไขและแจกจ่ายต่อได้\n"
 
-#: src/getbar.c:857
+#: src/getbar.c:933
 msgid "This project opposes AI exploitation and AI hegemony.\n"
 msgstr "โครงการนี้คัดค้านการเอาเปรียบด้วย AI และอำนาจนำของ AI\n"
 
-#: src/getbar.c:858
+#: src/getbar.c:934
 msgid ""
 "This project rejects mindless MIT-style licensing and politically naive BSD-"
 "style licensing.\n"
 msgstr ""
 "โครงการนี้ปฏิเสธใบอนุญาตแบบ MIT ที่ไร้วิจารณญาณ และใบอนุญาตแบบ BSD ที่โง่เขลาทางการเมือง\n"
 
-#: src/getbar.c:861
+#: src/getbar.c:937
 msgid "There is NO WARRANTY, to the extent permitted by law.\n"
 msgstr "ไม่มีการรับประกันใด ๆ ตามขอบเขตที่กฎหมายอนุญาต\n"
 
-#: src/getbar.c:1186
+#: src/getbar.c:1270
 #, c-format
 msgid "%s: GET %s\n"
 msgstr "%s: GET %s\n"
 
-#: src/getbar.c:1193
+#: src/getbar.c:1277
 #, c-format
 msgid "%s: received %<PRIu64> bytes"
 msgstr "%s: รับ %<PRIu64> ไบต์"
 
-#: src/getbar.c:1198
+#: src/getbar.c:1282
 msgid " [stopped early]"
 msgstr " [หยุดก่อนกำหนด]"
 
@@ -134,6 +148,21 @@ msgstr " [หยุดก่อนกำหนด]"
 #, c-format
 msgid "%s: write error\n"
 msgstr "%s: ข้อผิดพลาดในการเขียน\n"
+
+#~ msgid ""
+#~ "Block mode (-b) prints per-block durations in microseconds. The first "
+#~ "value is\n"
+#~ "the wait before data arrives; later values are block receive durations.\n"
+#~ "Interval mode (-i) prints bytes received per interval (leading zeros mean "
+#~ "no\n"
+#~ "data yet). Polynomial and estimate lines are printed after the series.\n"
+#~ "Optional theming: $XDG_CONFIG_HOME/getbar/gnuplot.rc\n"
+#~ msgstr ""
+#~ "โหมดบล็อก (-b) แสดงระยะเวลารับแต่ละบล็อกเป็นไมโครวินาที ค่าแรกคือเวลารอก่อนข้อมูลมาถึง "
+#~ "ค่าถัดไปคือระยะเวลารับแต่ละบล็อก\n"
+#~ "โหมดช่วงเวลา (-i) แสดงไบต์ที่รับในแต่ละช่วง (ศูนย์นำหน้าหมายถึงยังไม่มีข้อมูล)\n"
+#~ "บรรทัดพหุนามและการประมาณจะแสดงหลังชุดข้อมูล\n"
+#~ "ธีมเสริม: $XDG_CONFIG_HOME/getbar/gnuplot.rc\n"
 
 #~ msgid ""
 #~ "Usage: getbar [OPTION]... [FILE]...\n"

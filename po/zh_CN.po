@@ -2,130 +2,144 @@ msgid ""
 msgstr ""
 "Project-Id-Version: getbar\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-10 17:51+0800\n"
+"POT-Creation-Date: 2026-07-11 23:11+0800\n"
 "Language: zh_CN\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/getbar.c:775
+#: src/getbar.c:829
+#, c-format
 msgid "%s: wrote chart %s\n"
 msgstr "%s: 已写入图表 %s\n"
 
-#: src/getbar.c:791
+#: src/getbar.c:845
 #, c-format
 msgid "%s: wrote gnuplot script %s\n"
 msgstr "%s: 已写入 gnuplot 脚本 %s\n"
 
-#: src/getbar.c:813
+#: src/getbar.c:883
 msgid ""
 "Usage: getbar [OPTION]... URL\n"
 "Download URL with HTTP(S) GET and record throughput bars.\n"
-msgstr "用法：getbar [选项]... URL\n通过 HTTP(S) GET 下载 URL 并记录吞吐量柱状图。\n"
+msgstr ""
+"用法：getbar [选项]... URL\n"
+"通过 HTTP(S) GET 下载 URL 并记录吞吐量柱状图。\n"
 
-#: src/getbar.c:818
+#: src/getbar.c:888
 msgid "split by received block size\n"
 msgstr "按接收块大小分割\n"
 
-#: src/getbar.c:820
+#: src/getbar.c:890
 msgid "split by time interval (NUM may be fractional)\n"
 msgstr "按时间间隔分割（NUM 可为小数）\n"
 
-#: src/getbar.c:822
+#: src/getbar.c:892
 msgid "stop after receiving NUM bytes\n"
 msgstr "接收 NUM 字节后停止\n"
 
-#: src/getbar.c:824
+#: src/getbar.c:894
 msgid "stop after timeout\n"
 msgstr "超时后停止\n"
 
-#: src/getbar.c:826
+#: src/getbar.c:896
 msgid "output offset and polynomial coeffs\n"
 msgstr "输出偏移量与多项式系数\n"
 
-#: src/getbar.c:828
+#: src/getbar.c:898
 msgid "render chart (.png/.svg/.pdf/.eps) or save script\n"
 msgstr "渲染图表（.png/.svg/.pdf/.eps）或保存脚本\n"
 
-#: src/getbar.c:830
+#: src/getbar.c:900
 msgid "overwrite gnuplot output file\n"
 msgstr "覆盖 gnuplot 输出文件\n"
 
-#: src/getbar.c:832
+#: src/getbar.c:902
 msgid "output estimated bytes/sec after delay\n"
 msgstr "延迟后输出估算字节/秒\n"
 
-#: src/getbar.c:834
+#: src/getbar.c:904
+msgid "print summary after series: count size duration bps\n"
+msgstr "系列结束后输出摘要：数量 大小 时长 bps\n"
+
+#: src/getbar.c:906
+msgid "omit pre-data wait from series, window, count; set -p offset\n"
+msgstr "从系列、窗口、计数中省略数据前等待；设置 -p 偏移\n"
+
+#: src/getbar.c:908
 msgid "more logging to stderr\n"
 msgstr "向 stderr 输出更多日志\n"
 
-#: src/getbar.c:836
+#: src/getbar.c:910
 msgid "omit the bar series on stdout\n"
 msgstr "不在 stdout 输出柱状序列\n"
 
-#: src/getbar.c:838
+#: src/getbar.c:912
 msgid "display this help and exit\n"
 msgstr "显示此帮助并退出\n"
 
-#: src/getbar.c:840
+#: src/getbar.c:914
 msgid "output version information and exit\n"
 msgstr "输出版本信息并退出\n"
 
-#: src/getbar.c:842
+#: src/getbar.c:916
 msgid ""
-"Block mode (-b) prints per-block durations in microseconds. The first value "
-"is\n"
-"the wait before data arrives; later values are block receive durations.\n"
-"Interval mode (-i) prints bytes received per interval (leading zeros mean "
-"no\n"
-"data yet). Polynomial and estimate lines are printed after the series.\n"
+"Block mode (-b) prints per-block durations in microseconds. By default\n"
+"the first value is the wait before data arrives. With -d that wait is\n"
+"omitted from the series and derived metrics; -p then reports the delay\n"
+"as offset. Interval mode (-i) includes leading zero intervals by default;\n"
+"with -d they are omitted and -p offset is the idle time in seconds.\n"
+"Polynomial, count, and estimate lines are printed after the series.\n"
 "Optional theming: $XDG_CONFIG_HOME/getbar/gnuplot.rc\n"
-msgstr "块模式（-b）输出每块接收时长（微秒）。首个值为数据到达前的等待时间；后续值为各块接收时长。\n间隔模式（-i）输出每个间隔内接收的字节数（前导零表示尚无数据）。\n多项式与估算行在序列之后输出。\n可选主题：$XDG_CONFIG_HOME/getbar/gnuplot.rc\n"
+msgstr ""
+"块模式 (-b) 以微秒输出每块接收时长。默认第一个值为数据到达前的等待时间；使用 -d 时该等待从系列及派生指标中省略，-p 将延迟报告为偏移。间隔模式 (-i) 默认包含前导零间隔；使用 -d 时省略它们，-p 偏移为空闲时间（秒）。\n"
+"多项式、计数和估算行在系列之后输出。\n"
+"可选主题：$XDG_CONFIG_HOME/getbar/gnuplot.rc\n"
 
-#: src/getbar.c:848
+#: src/getbar.c:924
 #, c-format
 msgid "Report bugs to: <%s>\n"
 msgstr "报告问题到：<%s>\n"
 
-#: src/getbar.c:853
+#: src/getbar.c:929
 #, c-format
 msgid "Copyright (C) %d %s\n"
 msgstr "版权所有 (C) %d %s\n"
 
-#: src/getbar.c:854
+#: src/getbar.c:930
 msgid ""
 "License AGPL-3.0-or-later: <https://www.gnu.org/licenses/agpl-3.0.html>\n"
 msgstr ""
 "许可证 AGPL-3.0-or-later：<https://www.gnu.org/licenses/agpl-3.0.html>\n"
 
-#: src/getbar.c:856
+#: src/getbar.c:932
 msgid "This is free software: you are free to change and redistribute it.\n"
 msgstr "这是自由软件：你可以自由修改并重新分发。\n"
 
-#: src/getbar.c:857
+#: src/getbar.c:933
 msgid "This project opposes AI exploitation and AI hegemony.\n"
 msgstr "本项目反对 AI 剥削与 AI 霸权。\n"
 
-#: src/getbar.c:858
+#: src/getbar.c:934
 msgid ""
 "This project rejects mindless MIT-style licensing and politically naive BSD-"
 "style licensing.\n"
 msgstr "本项目反对无脑 MIT 式许可证和政治愚蠢 BSD 式许可证。\n"
 
-#: src/getbar.c:861
+#: src/getbar.c:937
 msgid "There is NO WARRANTY, to the extent permitted by law.\n"
 msgstr "在法律允许范围内，不提供任何担保。\n"
 
-#: src/getbar.c:1186
+#: src/getbar.c:1270
 #, c-format
 msgid "%s: GET %s\n"
 msgstr "%s: GET %s\n"
 
-#: src/getbar.c:1193
+#: src/getbar.c:1277
 #, c-format
 msgid "%s: received %<PRIu64> bytes"
 msgstr "%s: 已接收 %<PRIu64> 字节"
 
-#: src/getbar.c:1198
+#: src/getbar.c:1282
 msgid " [stopped early]"
 msgstr " [提前停止]"
 
@@ -133,6 +147,21 @@ msgstr " [提前停止]"
 #, c-format
 msgid "%s: write error\n"
 msgstr "%s: 写入错误\n"
+
+#~ msgid ""
+#~ "Block mode (-b) prints per-block durations in microseconds. The first "
+#~ "value is\n"
+#~ "the wait before data arrives; later values are block receive durations.\n"
+#~ "Interval mode (-i) prints bytes received per interval (leading zeros mean "
+#~ "no\n"
+#~ "data yet). Polynomial and estimate lines are printed after the series.\n"
+#~ "Optional theming: $XDG_CONFIG_HOME/getbar/gnuplot.rc\n"
+#~ msgstr ""
+#~ "块模式（-b）输出每块接收时长（微秒）。首个值为数据到达前的等待时间；后续值"
+#~ "为各块接收时长。\n"
+#~ "间隔模式（-i）输出每个间隔内接收的字节数（前导零表示尚无数据）。\n"
+#~ "多项式与估算行在序列之后输出。\n"
+#~ "可选主题：$XDG_CONFIG_HOME/getbar/gnuplot.rc\n"
 
 #~ msgid ""
 #~ "Usage: getbar [OPTION]... [FILE]...\n"

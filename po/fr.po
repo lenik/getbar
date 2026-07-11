@@ -2,111 +2,125 @@ msgid ""
 msgstr ""
 "Project-Id-Version: getbar\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-10 17:51+0800\n"
+"POT-Creation-Date: 2026-07-11 23:11+0800\n"
 "Language: fr\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/getbar.c:775
+#: src/getbar.c:829
+#, c-format
 msgid "%s: wrote chart %s\n"
 msgstr "%s: graphique ecrit %s\n"
 
-#: src/getbar.c:791
+#: src/getbar.c:845
 #, c-format
 msgid "%s: wrote gnuplot script %s\n"
 msgstr "%s: script gnuplot ecrit %s\n"
 
-#: src/getbar.c:813
+#: src/getbar.c:883
 msgid ""
 "Usage: getbar [OPTION]... URL\n"
 "Download URL with HTTP(S) GET and record throughput bars.\n"
-msgstr "Utilisation : getbar [OPTION]... URL\nTelecharge l'URL par HTTP(S) GET et enregistre des barres de debit.\n"
+msgstr ""
+"Utilisation : getbar [OPTION]... URL\n"
+"Telecharge l'URL par HTTP(S) GET et enregistre des barres de debit.\n"
 
-#: src/getbar.c:818
+#: src/getbar.c:888
 msgid "split by received block size\n"
 msgstr "diviser par taille de bloc recu\n"
 
-#: src/getbar.c:820
+#: src/getbar.c:890
 msgid "split by time interval (NUM may be fractional)\n"
 msgstr "diviser par intervalle de temps (NUM peut etre fractionnaire)\n"
 
-#: src/getbar.c:822
+#: src/getbar.c:892
 msgid "stop after receiving NUM bytes\n"
 msgstr "arreter apres NUM octets recus\n"
 
-#: src/getbar.c:824
+#: src/getbar.c:894
 msgid "stop after timeout\n"
 msgstr "arreter apres delai\n"
 
-#: src/getbar.c:826
+#: src/getbar.c:896
 msgid "output offset and polynomial coeffs\n"
 msgstr "afficher decalage et coeffs polynomiaux\n"
 
-#: src/getbar.c:828
+#: src/getbar.c:898
 msgid "render chart (.png/.svg/.pdf/.eps) or save script\n"
 msgstr "rendre un graphique (.png/.svg/.pdf/.eps) ou sauver le script\n"
 
-#: src/getbar.c:830
+#: src/getbar.c:900
 msgid "overwrite gnuplot output file\n"
 msgstr "ecraser le fichier de sortie gnuplot\n"
 
-#: src/getbar.c:832
+#: src/getbar.c:902
 msgid "output estimated bytes/sec after delay\n"
 msgstr "afficher octets/s estimes apres delai\n"
 
-#: src/getbar.c:834
+#: src/getbar.c:904
+msgid "print summary after series: count size duration bps\n"
+msgstr "afficher le resume apres la serie : nombre taille duree bps\n"
+
+#: src/getbar.c:906
+msgid "omit pre-data wait from series, window, count; set -p offset\n"
+msgstr "omettre l'attente pre-donnees de la serie, fenetre, comptage ; definir l'offset -p\n"
+
+#: src/getbar.c:908
 msgid "more logging to stderr\n"
 msgstr "plus de journaux vers stderr\n"
 
-#: src/getbar.c:836
+#: src/getbar.c:910
 msgid "omit the bar series on stdout\n"
 msgstr "omettre la serie de barres sur stdout\n"
 
-#: src/getbar.c:838
+#: src/getbar.c:912
 msgid "display this help and exit\n"
 msgstr "afficher cette aide et quitter\n"
 
-#: src/getbar.c:840
+#: src/getbar.c:914
 msgid "output version information and exit\n"
 msgstr "afficher les informations de version et quitter\n"
 
-#: src/getbar.c:842
+#: src/getbar.c:916
 msgid ""
-"Block mode (-b) prints per-block durations in microseconds. The first value "
-"is\n"
-"the wait before data arrives; later values are block receive durations.\n"
-"Interval mode (-i) prints bytes received per interval (leading zeros mean "
-"no\n"
-"data yet). Polynomial and estimate lines are printed after the series.\n"
+"Block mode (-b) prints per-block durations in microseconds. By default\n"
+"the first value is the wait before data arrives. With -d that wait is\n"
+"omitted from the series and derived metrics; -p then reports the delay\n"
+"as offset. Interval mode (-i) includes leading zero intervals by default;\n"
+"with -d they are omitted and -p offset is the idle time in seconds.\n"
+"Polynomial, count, and estimate lines are printed after the series.\n"
 "Optional theming: $XDG_CONFIG_HOME/getbar/gnuplot.rc\n"
-msgstr "Le mode bloc (-b) affiche les durees par bloc en microsecondes. La premiere valeur est l'attente avant l'arrivee des donnees ; les suivantes sont les durees de reception.\nLe mode intervalle (-i) affiche les octets recus par intervalle (des zeros initiaux signifient qu'il n'y a pas encore de donnees).\nLes lignes polynomiales et d'estimation sont affichees apres la serie.\nTheming optionnel : $XDG_CONFIG_HOME/getbar/gnuplot.rc\n"
+msgstr ""
+"Le mode bloc (-b) affiche les durees par bloc en microsecondes. Par defaut, la premiere valeur est l'attente avant l'arrivee des donnees ; avec -d, cette attente est omise de la serie et des metriques derivees ; -p rapporte alors le delai comme offset. Le mode intervalle (-i) inclut par defaut des intervalles zero initiaux ; avec -d, ils sont omis et l'offset -p est le temps d'inactivite en secondes.\n"
+"Les lignes polynome, comptage et estimation sont affichees apres la serie.\n"
+"Theming optionnel : $XDG_CONFIG_HOME/getbar/gnuplot.rc\n"
 
-#: src/getbar.c:848
+#: src/getbar.c:924
 #, c-format
 msgid "Report bugs to: <%s>\n"
 msgstr "Signaler les bugs a : <%s>\n"
 
-#: src/getbar.c:853
+#: src/getbar.c:929
 #, c-format
 msgid "Copyright (C) %d %s\n"
 msgstr "Copyright (C) %d %s\n"
 
-#: src/getbar.c:854
+#: src/getbar.c:930
 msgid ""
 "License AGPL-3.0-or-later: <https://www.gnu.org/licenses/agpl-3.0.html>\n"
 msgstr ""
 "Licence AGPL-3.0-or-later : <https://www.gnu.org/licenses/agpl-3.0.html>\n"
 
-#: src/getbar.c:856
+#: src/getbar.c:932
 msgid "This is free software: you are free to change and redistribute it.\n"
 msgstr "Ce logiciel est libre : vous pouvez le modifier et le redistribuer.\n"
 
-#: src/getbar.c:857
+#: src/getbar.c:933
 msgid "This project opposes AI exploitation and AI hegemony.\n"
 msgstr ""
 "Ce projet s'oppose a l'exploitation par l'IA et a l'hegemonie de l'IA.\n"
 
-#: src/getbar.c:858
+#: src/getbar.c:934
 msgid ""
 "This project rejects mindless MIT-style licensing and politically naive BSD-"
 "style licensing.\n"
@@ -114,21 +128,21 @@ msgstr ""
 "Ce projet rejette les licences de type MIT sans reflexion et les licences de "
 "type BSD politiquement naives.\n"
 
-#: src/getbar.c:861
+#: src/getbar.c:937
 msgid "There is NO WARRANTY, to the extent permitted by law.\n"
 msgstr "AUCUNE GARANTIE n'est fournie, dans les limites permises par la loi.\n"
 
-#: src/getbar.c:1186
+#: src/getbar.c:1270
 #, c-format
 msgid "%s: GET %s\n"
 msgstr "%s: GET %s\n"
 
-#: src/getbar.c:1193
+#: src/getbar.c:1277
 #, c-format
 msgid "%s: received %<PRIu64> bytes"
 msgstr "%s: %<PRIu64> octets recus"
 
-#: src/getbar.c:1198
+#: src/getbar.c:1282
 msgid " [stopped early]"
 msgstr " [arret anticipe]"
 
@@ -136,6 +150,23 @@ msgstr " [arret anticipe]"
 #, c-format
 msgid "%s: write error\n"
 msgstr "%s: erreur d'ecriture\n"
+
+#~ msgid ""
+#~ "Block mode (-b) prints per-block durations in microseconds. The first "
+#~ "value is\n"
+#~ "the wait before data arrives; later values are block receive durations.\n"
+#~ "Interval mode (-i) prints bytes received per interval (leading zeros mean "
+#~ "no\n"
+#~ "data yet). Polynomial and estimate lines are printed after the series.\n"
+#~ "Optional theming: $XDG_CONFIG_HOME/getbar/gnuplot.rc\n"
+#~ msgstr ""
+#~ "Le mode bloc (-b) affiche les durees par bloc en microsecondes. La "
+#~ "premiere valeur est l'attente avant l'arrivee des donnees ; les suivantes "
+#~ "sont les durees de reception.\n"
+#~ "Le mode intervalle (-i) affiche les octets recus par intervalle (des "
+#~ "zeros initiaux signifient qu'il n'y a pas encore de donnees).\n"
+#~ "Les lignes polynomiales et d'estimation sont affichees apres la serie.\n"
+#~ "Theming optionnel : $XDG_CONFIG_HOME/getbar/gnuplot.rc\n"
 
 #~ msgid ""
 #~ "Usage: getbar [OPTION]... [FILE]...\n"

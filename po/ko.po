@@ -2,110 +2,124 @@ msgid ""
 msgstr ""
 "Project-Id-Version: getbar\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-10 17:51+0800\n"
+"POT-Creation-Date: 2026-07-11 23:11+0800\n"
 "Language: ko\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/getbar.c:775
+#: src/getbar.c:829
+#, c-format
 msgid "%s: wrote chart %s\n"
 msgstr "%s: 차트 %s 작성\n"
 
-#: src/getbar.c:791
+#: src/getbar.c:845
 #, c-format
 msgid "%s: wrote gnuplot script %s\n"
 msgstr "%s: gnuplot 스크립트 %s 작성\n"
 
-#: src/getbar.c:813
+#: src/getbar.c:883
 msgid ""
 "Usage: getbar [OPTION]... URL\n"
 "Download URL with HTTP(S) GET and record throughput bars.\n"
-msgstr "사용법: getbar [옵션]... URL\nHTTP(S) GET으로 URL을 다운로드하고 처리량 막대 시리즈를 기록합니다.\n"
+msgstr ""
+"사용법: getbar [옵션]... URL\n"
+"HTTP(S) GET으로 URL을 다운로드하고 처리량 막대 시리즈를 기록합니다.\n"
 
-#: src/getbar.c:818
+#: src/getbar.c:888
 msgid "split by received block size\n"
 msgstr "수신 블록 크기로 분할\n"
 
-#: src/getbar.c:820
+#: src/getbar.c:890
 msgid "split by time interval (NUM may be fractional)\n"
 msgstr "시간 간격으로 분할(NUM은 소수 가능)\n"
 
-#: src/getbar.c:822
+#: src/getbar.c:892
 msgid "stop after receiving NUM bytes\n"
 msgstr "NUM 바이트 수신 후 중지\n"
 
-#: src/getbar.c:824
+#: src/getbar.c:894
 msgid "stop after timeout\n"
 msgstr "시간 초과 후 중지\n"
 
-#: src/getbar.c:826
+#: src/getbar.c:896
 msgid "output offset and polynomial coeffs\n"
 msgstr "오프셋과 다항식 계수 출력\n"
 
-#: src/getbar.c:828
+#: src/getbar.c:898
 msgid "render chart (.png/.svg/.pdf/.eps) or save script\n"
 msgstr "차트 렌더(.png/.svg/.pdf/.eps) 또는 스크립트 저장\n"
 
-#: src/getbar.c:830
+#: src/getbar.c:900
 msgid "overwrite gnuplot output file\n"
 msgstr "gnuplot 출력 파일 덮어쓰기\n"
 
-#: src/getbar.c:832
+#: src/getbar.c:902
 msgid "output estimated bytes/sec after delay\n"
 msgstr "지연 후 추정 바이트/초 출력\n"
 
-#: src/getbar.c:834
+#: src/getbar.c:904
+msgid "print summary after series: count size duration bps\n"
+msgstr "시리즈 후 요약 출력: 개수 크기 시간 bps\n"
+
+#: src/getbar.c:906
+msgid "omit pre-data wait from series, window, count; set -p offset\n"
+msgstr "시리즈, 윈도, 개수에서 데이터 전 대기 생략; -p 오프셋 설정\n"
+
+#: src/getbar.c:908
 msgid "more logging to stderr\n"
 msgstr "stderr에 더 많은 로그 출력\n"
 
-#: src/getbar.c:836
+#: src/getbar.c:910
 msgid "omit the bar series on stdout\n"
 msgstr "stdout에 막대 시리즈 생략\n"
 
-#: src/getbar.c:838
+#: src/getbar.c:912
 msgid "display this help and exit\n"
 msgstr "도움말을 표시하고 종료\n"
 
-#: src/getbar.c:840
+#: src/getbar.c:914
 msgid "output version information and exit\n"
 msgstr "버전 정보를 표시하고 종료\n"
 
-#: src/getbar.c:842
+#: src/getbar.c:916
 msgid ""
-"Block mode (-b) prints per-block durations in microseconds. The first value "
-"is\n"
-"the wait before data arrives; later values are block receive durations.\n"
-"Interval mode (-i) prints bytes received per interval (leading zeros mean "
-"no\n"
-"data yet). Polynomial and estimate lines are printed after the series.\n"
+"Block mode (-b) prints per-block durations in microseconds. By default\n"
+"the first value is the wait before data arrives. With -d that wait is\n"
+"omitted from the series and derived metrics; -p then reports the delay\n"
+"as offset. Interval mode (-i) includes leading zero intervals by default;\n"
+"with -d they are omitted and -p offset is the idle time in seconds.\n"
+"Polynomial, count, and estimate lines are printed after the series.\n"
 "Optional theming: $XDG_CONFIG_HOME/getbar/gnuplot.rc\n"
-msgstr "블록 모드(-b)는 블록별 수신 시간(마이크로초)을 출력합니다. 첫 값은 데이터 도착 전 대기 시간이며, 이후 값은 블록 수신 시간입니다.\n간격 모드(-i)는 각 간격마다 수신한 바이트 수를 출력합니다(선행 0은 아직 데이터가 없음을 의미).\n다항식과 추정 줄은 시리즈 뒤에 출력됩니다.\n선택적 테마: $XDG_CONFIG_HOME/getbar/gnuplot.rc\n"
+msgstr ""
+"블록 모드(-b)는 블록별 수신 시간을 마이크로초로 출력합니다. 기본적으로 첫 값은 데이터 도착 전 대기 시간입니다. -d를 사용하면 시리즈와 파생 지표에서 그 대기가 생략되고 -p는 지연을 오프셋으로 보고합니다. 간격 모드(-i)는 기본적으로 선행 0 간격을 포함합니다. -d에서는 이를 생략하고 -p 오프셋은 초 단위 유휴 시간입니다.\n"
+"다항식, 개수, 추정 줄은 시리즈 뒤에 출력됩니다.\n"
+"선택적 테마: $XDG_CONFIG_HOME/getbar/gnuplot.rc\n"
 
-#: src/getbar.c:848
+#: src/getbar.c:924
 #, c-format
 msgid "Report bugs to: <%s>\n"
 msgstr "버그 제보: <%s>\n"
 
-#: src/getbar.c:853
+#: src/getbar.c:929
 #, c-format
 msgid "Copyright (C) %d %s\n"
 msgstr "저작권 (C) %d %s\n"
 
-#: src/getbar.c:854
+#: src/getbar.c:930
 msgid ""
 "License AGPL-3.0-or-later: <https://www.gnu.org/licenses/agpl-3.0.html>\n"
 msgstr ""
 "라이선스 AGPL-3.0-or-later: <https://www.gnu.org/licenses/agpl-3.0.html>\n"
 
-#: src/getbar.c:856
+#: src/getbar.c:932
 msgid "This is free software: you are free to change and redistribute it.\n"
 msgstr "이것은 자유 소프트웨어이며 자유롭게 수정 및 재배포할 수 있습니다.\n"
 
-#: src/getbar.c:857
+#: src/getbar.c:933
 msgid "This project opposes AI exploitation and AI hegemony.\n"
 msgstr "이 프로젝트는 AI 착취와 AI 패권에 반대합니다.\n"
 
-#: src/getbar.c:858
+#: src/getbar.c:934
 msgid ""
 "This project rejects mindless MIT-style licensing and politically naive BSD-"
 "style licensing.\n"
@@ -113,21 +127,21 @@ msgstr ""
 "이 프로젝트는 무비판적 MIT식 라이선스와 정치적으로 어리석은 BSD식 라이선스를 "
 "거부합니다.\n"
 
-#: src/getbar.c:861
+#: src/getbar.c:937
 msgid "There is NO WARRANTY, to the extent permitted by law.\n"
 msgstr "법이 허용하는 한 어떠한 보증도 없습니다.\n"
 
-#: src/getbar.c:1186
+#: src/getbar.c:1270
 #, c-format
 msgid "%s: GET %s\n"
 msgstr "%s: GET %s\n"
 
-#: src/getbar.c:1193
+#: src/getbar.c:1277
 #, c-format
 msgid "%s: received %<PRIu64> bytes"
 msgstr "%s: %<PRIu64> 바이트 수신"
 
-#: src/getbar.c:1198
+#: src/getbar.c:1282
 msgid " [stopped early]"
 msgstr " [조기 중지]"
 
@@ -135,6 +149,22 @@ msgstr " [조기 중지]"
 #, c-format
 msgid "%s: write error\n"
 msgstr "%s: 쓰기 오류\n"
+
+#~ msgid ""
+#~ "Block mode (-b) prints per-block durations in microseconds. The first "
+#~ "value is\n"
+#~ "the wait before data arrives; later values are block receive durations.\n"
+#~ "Interval mode (-i) prints bytes received per interval (leading zeros mean "
+#~ "no\n"
+#~ "data yet). Polynomial and estimate lines are printed after the series.\n"
+#~ "Optional theming: $XDG_CONFIG_HOME/getbar/gnuplot.rc\n"
+#~ msgstr ""
+#~ "블록 모드(-b)는 블록별 수신 시간(마이크로초)을 출력합니다. 첫 값은 데이터 "
+#~ "도착 전 대기 시간이며, 이후 값은 블록 수신 시간입니다.\n"
+#~ "간격 모드(-i)는 각 간격마다 수신한 바이트 수를 출력합니다(선행 0은 아직 데"
+#~ "이터가 없음을 의미).\n"
+#~ "다항식과 추정 줄은 시리즈 뒤에 출력됩니다.\n"
+#~ "선택적 테마: $XDG_CONFIG_HOME/getbar/gnuplot.rc\n"
 
 #~ msgid ""
 #~ "Usage: getbar [OPTION]... [FILE]...\n"

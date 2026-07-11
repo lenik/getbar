@@ -2,129 +2,146 @@ msgid ""
 msgstr ""
 "Project-Id-Version: getbar\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-10 17:51+0800\n"
+"POT-Creation-Date: 2026-07-11 23:11+0800\n"
 "Language: eo\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/getbar.c:775
+#: src/getbar.c:829
+#, c-format
 msgid "%s: wrote chart %s\n"
 msgstr "%s: skribis diagramon %s\n"
 
-#: src/getbar.c:791
+#: src/getbar.c:845
 #, c-format
 msgid "%s: wrote gnuplot script %s\n"
 msgstr "%s: skribis gnuplot-skripton %s\n"
 
-#: src/getbar.c:813
+#: src/getbar.c:883
 msgid ""
 "Usage: getbar [OPTION]... URL\n"
 "Download URL with HTTP(S) GET and record throughput bars.\n"
-msgstr "Uzo: getbar [OPCIO]... URL\nElŝutas URL per HTTP(S) GET kaj registri trafik-stangojn.\n"
+msgstr ""
+"Uzo: getbar [OPCIO]... URL\n"
+"Elŝutas URL per HTTP(S) GET kaj registri trafik-stangojn.\n"
 
-#: src/getbar.c:818
+#: src/getbar.c:888
 msgid "split by received block size\n"
 msgstr "dividi laŭ ricevita blokogrando\n"
 
-#: src/getbar.c:820
+#: src/getbar.c:890
 msgid "split by time interval (NUM may be fractional)\n"
 msgstr "dividi laŭ tempintervalo (NUM povas esti decimala)\n"
 
-#: src/getbar.c:822
+#: src/getbar.c:892
 msgid "stop after receiving NUM bytes\n"
 msgstr "halti post ricevo de NUM bajtoj\n"
 
-#: src/getbar.c:824
+#: src/getbar.c:894
 msgid "stop after timeout\n"
 msgstr "halti post tempolimo\n"
 
-#: src/getbar.c:826
+#: src/getbar.c:896
 msgid "output offset and polynomial coeffs\n"
 msgstr "eligi deklivon kaj polinomajn koeficientojn\n"
 
-#: src/getbar.c:828
+#: src/getbar.c:898
 msgid "render chart (.png/.svg/.pdf/.eps) or save script\n"
 msgstr "bildigi diagramon (.png/.svg/.pdf/.eps) aŭ konservi skripton\n"
 
-#: src/getbar.c:830
+#: src/getbar.c:900
 msgid "overwrite gnuplot output file\n"
 msgstr "anstataŭigi gnuplot-eligan dosieron\n"
 
-#: src/getbar.c:832
+#: src/getbar.c:902
 msgid "output estimated bytes/sec after delay\n"
 msgstr "eligi taksitajn bajtoj/s post prokrasto\n"
 
-#: src/getbar.c:834
+#: src/getbar.c:904
+msgid "print summary after series: count size duration bps\n"
+msgstr "presi resumon post serio: nombro grandeco daŭro bps\n"
+
+#: src/getbar.c:906
+msgid "omit pre-data wait from series, window, count; set -p offset\n"
+msgstr "elizi antaŭ-datuman atendon el serio, fenestro, nombro; agordi -p-ofseton\n"
+
+#: src/getbar.c:908
 msgid "more logging to stderr\n"
 msgstr "pli da protokolado al stderr\n"
 
-#: src/getbar.c:836
+#: src/getbar.c:910
 msgid "omit the bar series on stdout\n"
 msgstr "ne eligi stang-serion al stdout\n"
 
-#: src/getbar.c:838
+#: src/getbar.c:912
 msgid "display this help and exit\n"
 msgstr "montri cxi tiun helpon kaj eliri\n"
 
-#: src/getbar.c:840
+#: src/getbar.c:914
 msgid "output version information and exit\n"
 msgstr "montri versiajn informojn kaj eliri\n"
 
-#: src/getbar.c:842
+#: src/getbar.c:916
 msgid ""
-"Block mode (-b) prints per-block durations in microseconds. The first value "
-"is\n"
-"the wait before data arrives; later values are block receive durations.\n"
-"Interval mode (-i) prints bytes received per interval (leading zeros mean "
-"no\n"
-"data yet). Polynomial and estimate lines are printed after the series.\n"
+"Block mode (-b) prints per-block durations in microseconds. By default\n"
+"the first value is the wait before data arrives. With -d that wait is\n"
+"omitted from the series and derived metrics; -p then reports the delay\n"
+"as offset. Interval mode (-i) includes leading zero intervals by default;\n"
+"with -d they are omitted and -p offset is the idle time in seconds.\n"
+"Polynomial, count, and estimate lines are printed after the series.\n"
 "Optional theming: $XDG_CONFIG_HOME/getbar/gnuplot.rc\n"
-msgstr "Blok-reĝimo (-b) eligas daŭrojn po bloko en mikrosekundoj. La unua valoro estas la atendo antaŭ alveno de datumoj; postaj valoroj estas ricev-dauradoj.\nInterval-reĝimo (-i) eligas ricevitajn bajtojn po intervalo (antauaj nuloj signifas ankoraŭ neniuj datumoj).\nPolinomaj kaj takso-linioj estas eligitaj post la serio.\nOpcia temado: $XDG_CONFIG_HOME/getbar/gnuplot.rc\n"
+msgstr ""
+"Modo bloko (-b) presas daŭrojn po bloko en mikrosekundoj. Apriora la unua valoro estas la atendo antaŭ alveno de datumoj; kun -d tiu atendo estas elizita el la serio kaj derivitaj metrikoj; -p tiam raportas la prokraston kiel ofseton. Modo intervalo (-i) apriora inkluzivas intervalojn kun antaŭaj nuloj; kun -d ili estas elizitaj kaj -p-ofseto estas la neaktiva tempo en sekundoj.\n"
+"Polinomaj, nombraj kaj estimaj linioj estas presitaj post la serio.\n"
+"Laŭvola etoso: $XDG_CONFIG_HOME/getbar/gnuplot.rc\n"
 
-#: src/getbar.c:848
+#: src/getbar.c:924
 #, c-format
 msgid "Report bugs to: <%s>\n"
 msgstr "Raportu cimojn al: <%s>\n"
 
-#: src/getbar.c:853
+#: src/getbar.c:929
 #, c-format
 msgid "Copyright (C) %d %s\n"
 msgstr "Kopirajto (C) %d %s\n"
 
-#: src/getbar.c:854
+#: src/getbar.c:930
 msgid ""
 "License AGPL-3.0-or-later: <https://www.gnu.org/licenses/agpl-3.0.html>\n"
-msgstr "Licenco AGPL-3.0-or-later: <https://www.gnu.org/licenses/agpl-3.0.html>\n"
+msgstr ""
+"Licenco AGPL-3.0-or-later: <https://www.gnu.org/licenses/agpl-3.0.html>\n"
 
-#: src/getbar.c:856
+#: src/getbar.c:932
 msgid "This is free software: you are free to change and redistribute it.\n"
 msgstr "Tio estas libera programaro: vi rajtas sxangxi kaj redistribui gxin.\n"
 
-#: src/getbar.c:857
+#: src/getbar.c:933
 msgid "This project opposes AI exploitation and AI hegemony.\n"
 msgstr "Ĉi tiu projekto kontraŭas AI-ekspluatadon kaj AI-hegemonion.\n"
 
-#: src/getbar.c:858
+#: src/getbar.c:934
 msgid ""
 "This project rejects mindless MIT-style licensing and politically naive BSD-"
 "style licensing.\n"
-msgstr "Ĉi tiu projekto malakceptas senpripensajn MIT-stilajn permesilojn kaj politike naivecajn BSD-stilajn permesilojn.\n"
+msgstr ""
+"Ĉi tiu projekto malakceptas senpripensajn MIT-stilajn permesilojn kaj "
+"politike naivecajn BSD-stilajn permesilojn.\n"
 
-#: src/getbar.c:861
+#: src/getbar.c:937
 msgid "There is NO WARRANTY, to the extent permitted by law.\n"
 msgstr "NE ESTAS GARANTIO, lau la amplekso permesita de la lexo.\n"
 
-#: src/getbar.c:1186
+#: src/getbar.c:1270
 #, c-format
 msgid "%s: GET %s\n"
 msgstr "%s: GET %s\n"
 
-#: src/getbar.c:1193
+#: src/getbar.c:1277
 #, c-format
 msgid "%s: received %<PRIu64> bytes"
 msgstr "%s: ricevis %<PRIu64> bajtojn"
 
-#: src/getbar.c:1198
+#: src/getbar.c:1282
 msgid " [stopped early]"
 msgstr " [haltis frue]"
 
@@ -132,6 +149,23 @@ msgstr " [haltis frue]"
 #, c-format
 msgid "%s: write error\n"
 msgstr "%s: skriberaro\n"
+
+#~ msgid ""
+#~ "Block mode (-b) prints per-block durations in microseconds. The first "
+#~ "value is\n"
+#~ "the wait before data arrives; later values are block receive durations.\n"
+#~ "Interval mode (-i) prints bytes received per interval (leading zeros mean "
+#~ "no\n"
+#~ "data yet). Polynomial and estimate lines are printed after the series.\n"
+#~ "Optional theming: $XDG_CONFIG_HOME/getbar/gnuplot.rc\n"
+#~ msgstr ""
+#~ "Blok-reĝimo (-b) eligas daŭrojn po bloko en mikrosekundoj. La unua valoro "
+#~ "estas la atendo antaŭ alveno de datumoj; postaj valoroj estas ricev-"
+#~ "dauradoj.\n"
+#~ "Interval-reĝimo (-i) eligas ricevitajn bajtojn po intervalo (antauaj "
+#~ "nuloj signifas ankoraŭ neniuj datumoj).\n"
+#~ "Polinomaj kaj takso-linioj estas eligitaj post la serio.\n"
+#~ "Opcia temado: $XDG_CONFIG_HOME/getbar/gnuplot.rc\n"
 
 #~ msgid ""
 #~ "Usage: getbar [OPTION]... [FILE]...\n"
