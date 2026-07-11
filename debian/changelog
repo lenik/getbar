@@ -1,3 +1,19 @@
+getbar (1.1.0) testing; urgency=medium
+
+  * New option -d, --delay-started: omit pre-data wait from the bar series,
+    --window, --count, and polynomial fit; --polynomial offset then reports
+    the stripped delay (preamble bar count in block mode, seconds in interval
+    mode).
+  * Documentation: expanded getbar(1) with -d/-c behaviour, updated -w/-p
+    descriptions, and additional examples; same updates in all ten translated
+    manual pages.
+  * Internationalization: updated po catalogs (getbar.pot and de, eo, fr,
+    it, ja, ko, th, vi, zh_CN, zh_TW) for new and revised CLI help strings.
+  * Bash completion: -d and --delay-started.
+  * Version fallback in meson.build bumped to 1.1.0.
+
+ -- Lenik (谢继雷) <lenik@bodz.net>  Sat, 11 Jul 2026 23:15:00 +0800
+
 getbar (1.0.0) testing; urgency=medium
 
   * Initial release of getbar, a command-line HTTP(S) download throughput tool.
