@@ -12,8 +12,23 @@ getbar \- HTTP 下载吞吐量柱状序列
 ，并在标准输出记录柱状序列。
 可使用块模式记录每块接收耗时（微秒），或间隔模式记录每个时间片接收的字节数。
 .PP
-块模式下第一个耗时为首字节到达前的等待时间；后续值为各块真实接收耗时。
-间隔模式在等待数据时可能输出前导零。
+默认记录完整时间线，包括连接与服务器延迟
+（块模式下为 TTFB，间隔模式下为前导零间隔）。
+多项式
+.BR \-p
+偏移默认为零，除非设置
+.B \-d
+。
+.PP
+使用
+.BR \-d
+时，数据到达前的等待会从柱状序列、
+.BR \-w
+、
+.BR \-c
+及多项式拟合中省略；
+.BR \-p
+偏移则报告被剥离的延迟（间隔模式下为秒，块模式下为前导柱数量）。
 .PP
 输出结束表示下载完成、达到
 .B \-\-window
@@ -43,15 +58,19 @@ getbar \- HTTP 下载吞吐量柱状序列
 字节后停止。
 .TP
 .BR \-w ", " \-\-window =\fINUM\fR[um][s]
-在指定时间限制后停止。
+在指定时间限制后停止。使用
+.BR \-d
+时，限制仅在数据开始到达后生效。
 .TP
 .BR \-p ", " \-\-polynomial =\fIORDER\fR
 在序列之后输出多项式拟合行：
 .IR offset
-及系数。块模式下 offset 为前导零块数量；间隔模式下为开始接收前的延迟（秒）。
-若同时指定
+及系数。默认偏移为零；使用
+.BR \-d
+时，偏移为被剥离的数据前延迟（间隔模式下为秒，块模式下为前导柱数量）。
+指定
 .BR \-\-gnuplot
-，图表中也会绘制该拟合曲线。
+时，图表中也会绘制该拟合曲线。
 .TP
 .BR \-g ", " \-\-gnuplot =\fIFILE\fR
 将 gnuplot 输出写入
@@ -74,6 +93,29 @@ getbar \- HTTP 下载吞吐量柱状序列
 .IR NUM
 时刻起至传输结束。
 .TP
+.BR \-c ", " \-\-count
+在序列之后输出一行摘要：
+.IR series-count size-bytes duration-usec bytes-per-second 。
+.IR series-count
+为柱值数量；
+.IR size-bytes
+为接收总字节数；
+.IR duration-usec
+为从测量起点到结束的墙钟传输时间（除非设置
+.B \-d
+，否则从连接开始）；
+.IR bytes-per-second
+为该时段内的平均吞吐量。
+.TP
+.BR \-d ", " \-\-delay-started
+从柱状序列及
+.BR \-w
+、
+.BR \-c
+、多项式拟合中省略数据前等待。
+.BR \-p
+偏移报告被剥离的延迟。
+.TP
 .BR \-q ", " \-\-quiet
 不输出柱状序列。
 .TP
@@ -86,18 +128,66 @@ getbar \- HTTP 下载吞吐量柱状序列
 .B \-\-version
 显示版本并退出。
 .SH EXAMPLES
+.SS 基本测量
 .TP
 64 KiB 块：
 .B getbar \-b 64k https://example.com/file
 .TP
-100 ms 间隔，1 s 后估算速度：
+100 ms 间隔，1 s 后估算速度（隐藏序列）：
 .B getbar \-i 100ms \-e 1s \-q https://example.com/file
 .TP
-块模式图表并叠加多项式：
+间隔序列后的摘要行：
+.B getbar \-i 100ms \-c https://example.com/file
+.br
+输出以类似
+.IR "20 1048576 1523400 688421"
+的行结束（柱数、字节、微秒、B/s）。
+.TP
+从块模式打印首字节时间（微秒）：
+.B getbar \-b 64k \-s 256k https://example.com/file | awk '{print $1}'
+.SS 控制大小或时长
+.TP
+采样 10 MiB 并打印稳态 B/s 估算：
+.B getbar \-i 100ms \-s 10M \-e 2s \-q https://mirror.example/file
+.TP
+最多运行 30 s（浸泡测试）：
+.B getbar \-i 1s \-w 30s \-v https://cdn.example/large.bin
+.TP
+在 50 MiB 或 60 s 中先到达者处停止：
+.B getbar \-b 1M \-s 50M \-w 60s https://example.com/file
+.SS 图表与分析
+.TP
+小数间隔、3 s 窗口、详细模式、覆盖图表：
+.B getbar \-vfw3 \-i0.1s \-g /tmp/getbar.png \-f https://example.com/file
+.TP
+块模式图表叠加二次多项式：
 .B getbar \-b 64k \-p 2 \-g /tmp/getbar.png https://example.com/file
+.TP
+间隔模式图表叠加多项式：
+.B getbar \-i 100ms \-p 2 \-g chart.png \-f https://example.com/file
+.TP
+导出 SVG 用于报告：
+.B getbar \-i 200ms \-p 2 \-g report.svg \-f https://example.com/file
 .TP
 保存 gnuplot 脚本而不渲染：
 .B getbar \-b 64k \-g /tmp/getbar.gp https://example.com/file
+.SS 比较镜像
+.TP
+每个 URL 一行估算 B/s（5 MiB 采样）：
+.B for url in https://mirror-a.example/file https://mirror-b.example/file; do printf '%s\\t' "$url"; getbar \-i 100ms \-s 5M \-e 1s \-q "$url"; done
+.TP
+按估算吞吐量排序镜像（\fImirrors.txt\fR 每行一个 URL）：
+.B while read \-r url; do bps=$(getbar \-i 100ms \-s 5M \-e 1s \-q "$url") || continue; printf '%s\\t%s\\n' "$bps" "$url"; done < mirrors.txt | sort \-nr
+.SS Shell 集成
+.TP
+详细日志到标准错误，序列到标准输出：
+.B getbar \-v \-i 100ms \-s 10M https://example.com/file > series.txt
+.TP
+一次运行保存序列与图表：
+.B getbar \-i 100ms \-s 20M \-g run.png \-f https://example.com/file | tee series.txt
+.TP
+由估算行粗略计算 MiB/s：
+.B bps=$(getbar \-i 100ms \-s 10M \-e 1s \-q https://example.com/file); awk \-v b="$bps" 'BEGIN { printf "~ %.2f MiB/s\\n", b / 1024 / 1024 }'
 .SH FILES
 .TP
 .I $XDG_CONFIG_HOME/getbar/gnuplot.rc

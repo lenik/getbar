@@ -13,9 +13,21 @@ per HTTP aŭ HTTPS GET per libcurl kaj registri stang-serion sur stdout.
 Blok-reĝimo registri ricev-daŭrojn po bloko en mikrosekundoj; interval-reĝimo
 registri ricevitajn bajtojn po tempa intervalo.
 .PP
-En blok-reĝimo la unua daŭro estas la atendo antaŭ alveno de datumoj; postaj
-valoroj estas blok-ricev-daŭroj. En interval-reĝimo povas aperi antaŭaj nuloj
-dum atendo de datumoj.
+Defaŭlte la tuta tempolinio estas registrita, inkluzive de konekto- kaj
+servila prokrasto (TTFB en blok-reĝimo, antaŭaj nul-intervaloj en
+interval-reĝimo). Polinoma
+.BR \-p
+-dekalo estas nulo krom se
+.B \-d
+estas agordita.
+.PP
+Kun
+.BR \-d ", atendo antaŭ datumoj estas preterlasita el la stang-serio, el "
+.BR \-w ", "
+.BR \-c ", kaj la polinoma adaptado; "
+.BR \-p
+-dekalo tiam raportas la forigiton prokraston (sekundoj en interval-reĝimo,
+nombro de antaŭparolaj stangoj en blok-reĝimo).
 .PP
 Fino de eligo signifas elŝuto finita, atingis
 .B \-\-window
@@ -45,23 +57,27 @@ Halti post ricevo de
 bajtoj.
 .TP
 .BR \-w ", " \-\-window =\fINUM\fR[um][s]
-Halti post tempolimo.
+Halti post tempolimo. Kun
+.BR \-d ,
+la limo validas nur post komenco de alveno de datumoj.
 .TP
 .BR \-p ", " \-\-polynomial =\fIORDER\fR
 Post la serio, eligi linion de polinoma adaptado:
 .IR offset
-kaj koeficientoj. En blok-reĝimo offset estas la nombro de antaŭaj nul-blokoj;
-en interval-reĝimo la prokrasto antaŭ komenco de ricevo, en sekundoj.
-Kun
+kaj koeficientoj. Defaŭlte offset estas nulo; kun
+.BR \-d ,
+offset estas la forigita atendo antaŭ datumoj (sekundoj en interval-reĝimo,
+nombro de antaŭparolaj stangoj en blok-reĝimo). La sama adaptado estas
+desegnita sur la
 .BR \-\-gnuplot
-, la sama kurbo estas desegnita.
+-diagramo kiam ĉi tiu opcio estas donita.
 .TP
 .BR \-g ", " \-\-gnuplot =\fIFILE\fR
 Skribi gnuplot-eligon al
 .IR FILE .
 Finajoj
 .RB ( .png ", " .svg ", " .pdf ", " .eps )
- estas bildigitaj per gnuplot; alie nur skripto estas konservita (gnuplot ne
+estas bildigitaj per gnuplot; alie nur skripto estas konservita (gnuplot ne
 bezonata).
 Kun
 .BR \-\-polynomial
@@ -78,6 +94,27 @@ Post la serio, eligi taksiitan elŝut-rapidecon en bajtoj/s, mezurita de
 .IR NUM
 post komenco de datumoj ĝis fino de transigo.
 .TP
+.BR \-c ", " \-\-count
+Post la serio, eligi unu resum-linion:
+.IR series-count size-bytes duration-usec bytes-per-second .
+.IR series-count
+estas la nombro de stang-valoroj;
+.IR size-bytes
+estas tutaj ricevitaj bajtoj;
+.IR duration-usec
+estas murhorloĝa transiga tempo de la mezur-origino ĝis fino (de konekto-komenco
+krom se
+.B \-d
+estas agordita);
+.IR bytes-per-second
+estas mezuma trafiko dum tiu daŭro.
+.TP
+.BR \-d ", " \-\-delay-started
+Preterlasi atendon antaŭ datumoj el la stang-serio kaj el
+.BR \-w ", " \-c ", kaj la polinoma adaptado. "
+.BR \-p
+-dekalo raportas la forigitan prokraston.
+.TP
 .BR \-q ", " \-\-quiet
 Ne eligi la stang-serion.
 .TP
@@ -90,18 +127,66 @@ Montri helpon kaj eliri.
 .B \-\-version
 Montri version kaj eliri.
 .SH EXAMPLES
+.SS Bazaj mezuradoj
 .TP
 64-KiB-blokoj:
 .B getbar \-b 64k https://example.com/file
 .TP
-100-ms-intervaloj, takso post 1 s:
+100-ms-intervaloj kun rapidec-takso post 1 s (serio kaŝita):
 .B getbar \-i 100ms \-e 1s \-q https://example.com/file
 .TP
-Blok-diagramo kun polinomo:
+Resum-linio post interval-serio:
+.B getbar \-i 100ms \-c https://example.com/file
+.br
+Eligo finiĝas per linio kiel
+.IR "20 1048576 1523400 688421"
+(nombro de stangoj, bajtoj, mikrosekundoj, B/s).
+.TP
+Eligi temp-on-ĝis-unua-bajto (mikrosekundoj) el blok-reĝimo:
+.B getbar \-b 64k \-s 256k https://example.com/file | awk '{print $1}'
+.SS Regita grandeco aŭ daŭro
+.TP
+Sampi 10 MiB kaj eligi taksiitan B/s en stabila stato:
+.B getbar \-i 100ms \-s 10M \-e 2s \-q https://mirror.example/file
+.TP
+Ruli maksimume 30 s (soak-testo):
+.B getbar \-i 1s \-w 30s \-v https://cdn.example/large.bin
+.TP
+Halti je tio kio unue okazas, 50 MiB aŭ 60 s:
+.B getbar \-b 1M \-s 50M \-w 60s https://example.com/file
+.SS Diagramoj kaj analizo
+.TP
+Decimala intervalo, 3-s fenestro, detala, diagramo anstataŭigi:
+.B getbar \-vfw3 \-i0.1s \-g /tmp/getbar.png \-f https://example.com/file
+.TP
+Blok-diagramo kun kvadrata polinoma supermeto:
 .B getbar \-b 64k \-p 2 \-g /tmp/getbar.png https://example.com/file
+.TP
+Interval-diagramo kun polinoma supermeto:
+.B getbar \-i 100ms \-p 2 \-g chart.png \-f https://example.com/file
+.TP
+Eksporti SVG por raportoj:
+.B getbar \-i 200ms \-p 2 \-g report.svg \-f https://example.com/file
 .TP
 Konservi gnuplot-skripton sen bildigo:
 .B getbar \-b 64k \-g /tmp/getbar.gp https://example.com/file
+.SS Kompari spegulojn
+.TP
+Unu taksiita B/s-linio po URL (5-MiB-sampo):
+.B for url in https://mirror-a.example/file https://mirror-b.example/file; do printf '%s\\t' "$url"; getbar \-i 100ms \-s 5M \-e 1s \-q "$url"; done
+.TP
+Ordigi spegulojn laŭ taksiita trafiko (\fImirrors.txt\fR listigas unu URL po linio):
+.B while read \-r url; do bps=$(getbar \-i 100ms \-s 5M \-e 1s \-q "$url") || continue; printf '%s\\t%s\\n' "$bps" "$url"; done < mirrors.txt | sort \-nr
+.SS Ŝel-integriĝo
+.TP
+Detalaj protokoloj sur stderr, serio sur stdout:
+.B getbar \-v \-i 100ms \-s 10M https://example.com/file > series.txt
+.TP
+Konservi serion kaj diagramon en unu rulo:
+.B getbar \-i 100ms \-s 20M \-g run.png \-f https://example.com/file | tee series.txt
+.TP
+Proksimuma MiB/s el la takso-linio:
+.B bps=$(getbar \-i 100ms \-s 10M \-e 1s \-q https://example.com/file); awk \-v b="$bps" 'BEGIN { printf "~ %.2f MiB/s\\n", b / 1024 / 1024 }'
 .SH FILES
 .TP
 .I $XDG_CONFIG_HOME/getbar/gnuplot.rc

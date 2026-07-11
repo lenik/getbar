@@ -10,12 +10,25 @@ getbar \- serie a barre del throughput di download HTTP
 scarica
 .IR URL
 con GET HTTP o HTTPS usando libcurl e registra una serie a barre su stdout.
-In modalita blocco registra le durate di ricezione per blocco in microsecondi ;
-in modalita intervallo i byte ricevuti per fetta temporale.
+Usare la modalita blocco per registrare le durate di ricezione per blocco in
+microsecondi, oppure la modalita intervallo per i byte ricevuti per fetta
+temporale.
 .PP
-In modalita blocco la prima durata e l'attesa prima dell'arrivo dei dati ; le
-successive sono le durate di ricezione dei blocchi. In modalita intervallo
-possono comparire zeri iniziali in attesa dei dati.
+Per impostazione predefinita l'intera timeline e registrata, inclusi ritardo di
+connessione e del server (TTFB in modalita blocco, intervalli zero iniziali in
+modalita intervallo). L'offset polinomiale
+.BR \-p
+e zero salvo con
+.B \-d
+impostato.
+.PP
+Con
+.BR \-d ", l'attesa pre-dati e omessa dalla serie a barre, da "
+.BR \-w ", "
+.BR \-c ", e dall'adattamento polinomiale; "
+.BR \-p
+offset riporta il ritardo rimosso (secondi in modalita intervallo, numero di
+barre preambolo in modalita blocco).
 .PP
 La fine dell'output indica download completato, raggiunto
 .B \-\-window
@@ -45,16 +58,20 @@ Fermarsi dopo
 byte ricevuti.
 .TP
 .BR \-w ", " \-\-window =\fINUM\fR[um][s]
-Fermarsi dopo il limite di tempo.
+Fermarsi dopo il limite di tempo. Con
+.BR \-d ,
+il limite si applica solo dopo l'inizio dell'arrivo dei dati.
 .TP
 .BR \-p ", " \-\-polynomial =\fIORDER\fR
 Dopo la serie, stampare una riga di adattamento polinomiale :
 .IR offset
-e coefficienti. In modalita blocco offset e il numero di blocchi zero iniziali ;
-in modalita intervallo il ritardo prima dell'inizio ricezione, in secondi.
-Con
+e coefficienti. Per impostazione predefinita offset e zero; con
+.BR \-d ,
+offset e il ritardo pre-dati rimosso (secondi in modalita intervallo, numero di
+barre preambolo in modalita blocco). Lo stesso adattamento viene disegnato nel
+grafico
 .BR \-\-gnuplot
-, la stessa curva viene disegnata nel grafico.
+quando questa opzione e impostata.
 .TP
 .BR \-g ", " \-\-gnuplot =\fIFILE\fR
 Scrivere l'output gnuplot in
@@ -63,9 +80,9 @@ Le estensioni
 .RB ( .png ", " .svg ", " .pdf ", " .eps )
 vengono renderizzate con gnuplot ; altrimenti si salva solo lo script (gnuplot
 non richiesto).
-Con
+Se
 .BR \-\-polynomial
-, includere la curva adattata.
+e impostato, includere la curva adattata.
 Tema opzionale da
 .IR $XDG_CONFIG_HOME /getbar/gnuplot.rc
 se presente.
@@ -77,6 +94,27 @@ Sovrascrivere un file di output gnuplot esistente.
 Dopo la serie, stampare la velocita di download stimata in byte/s, misurata da
 .IR NUM
 dopo l'inizio dei dati fino alla fine del trasferimento.
+.TP
+.BR \-c ", " \-\-count
+Dopo la serie, stampare una riga di riepilogo :
+.IR series-count size-bytes duration-usec bytes-per-second .
+.IR series-count
+e il numero di valori a barre ;
+.IR size-bytes
+e il totale dei byte ricevuti ;
+.IR duration-usec
+e il tempo di trasferimento a muro dall'origine della misura al termine (dall'inizio
+della connessione salvo con
+.B \-d
+impostato) ;
+.IR bytes-per-second
+e il throughput medio su tale durata.
+.TP
+.BR \-d ", " \-\-delay-started
+Omettere l'attesa pre-dati dalla serie a barre e da
+.BR \-w ", " \-c ", e dall'adattamento polinomiale. "
+.BR \-p
+offset riporta il ritardo rimosso.
 .TP
 .BR \-q ", " \-\-quiet
 Non stampare la serie a barre.
@@ -90,18 +128,66 @@ Mostrare l'aiuto e uscire.
 .B \-\-version
 Mostrare la versione e uscire.
 .SH EXAMPLES
+.SS Misure di base
 .TP
 Blocchi da 64 KiB :
 .B getbar \-b 64k https://example.com/file
 .TP
-Intervalli da 100 ms, stima dopo 1 s :
+Intervalli da 100 ms con stima velocita dopo 1 s (serie nascosta) :
 .B getbar \-i 100ms \-e 1s \-q https://example.com/file
 .TP
-Grafico a blocchi con polinomio :
+Riga di riepilogo dopo serie a intervalli :
+.B getbar \-i 100ms \-c https://example.com/file
+.br
+L'output termina con una riga del tipo
+.IR "20 1048576 1523400 688421"
+(numero di barre, byte, microsecondi, B/s).
+.TP
+Stampare il time-to-first-byte (microsecondi) in modalita blocco :
+.B getbar \-b 64k \-s 256k https://example.com/file | awk '{print $1}'
+.SS Dimensione o durata controllata
+.TP
+Campionare 10 MiB e stampare stima B/s a regime :
+.B getbar \-i 100ms \-s 10M \-e 2s \-q https://mirror.example/file
+.TP
+Eseguire al massimo 30 s (test di carico) :
+.B getbar \-i 1s \-w 30s \-v https://cdn.example/large.bin
+.TP
+Fermarsi al primo tra 50 MiB o 60 s :
+.B getbar \-b 1M \-s 50M \-w 60s https://example.com/file
+.SS Grafici e analisi
+.TP
+Intervallo frazionario, finestra 3 s, verbose, sovrascrittura grafico :
+.B getbar \-vfw3 \-i0.1s \-g /tmp/getbar.png \-f https://example.com/file
+.TP
+Grafico a blocchi con sovrapposizione polinomiale quadratica :
 .B getbar \-b 64k \-p 2 \-g /tmp/getbar.png https://example.com/file
 .TP
-Salvare solo lo script gnuplot :
+Grafico a intervalli con sovrapposizione polinomiale :
+.B getbar \-i 100ms \-p 2 \-g chart.png \-f https://example.com/file
+.TP
+Esportare SVG per report :
+.B getbar \-i 200ms \-p 2 \-g report.svg \-f https://example.com/file
+.TP
+Salvare uno script gnuplot invece di renderizzare :
 .B getbar \-b 64k \-g /tmp/getbar.gp https://example.com/file
+.SS Confronto mirror
+.TP
+Una riga B/s stimata per URL (campione 5 MiB) :
+.B for url in https://mirror-a.example/file https://mirror-b.example/file; do printf '%s\\t' "$url"; getbar \-i 100ms \-s 5M \-e 1s \-q "$url"; done
+.TP
+Ordinare mirror per throughput stimato (\fImirrors.txt\fR elenca un URL per riga) :
+.B while read \-r url; do bps=$(getbar \-i 100ms \-s 5M \-e 1s \-q "$url") || continue; printf '%s\\t%s\\n' "$bps" "$url"; done < mirrors.txt | sort \-nr
+.SS Integrazione shell
+.TP
+Log verbose su stderr, serie su stdout :
+.B getbar \-v \-i 100ms \-s 10M https://example.com/file > series.txt
+.TP
+Salvare serie e grafico in una sola esecuzione :
+.B getbar \-i 100ms \-s 20M \-g run.png \-f https://example.com/file | tee series.txt
+.TP
+MiB/s approssimativi dalla riga di stima :
+.B bps=$(getbar \-i 100ms \-s 10M \-e 1s \-q https://example.com/file); awk \-v b="$bps" 'BEGIN { printf "~ %.2f MiB/s\\n", b / 1024 / 1024 }'
 .SH FILES
 .TP
 .I $XDG_CONFIG_HOME/getbar/gnuplot.rc

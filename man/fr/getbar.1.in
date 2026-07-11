@@ -14,9 +14,21 @@ sortie standard.
 Le mode bloc enregistre la duree de reception par bloc en microsecondes ; le
 mode intervalle enregistre les octets recus par tranche de temps.
 .PP
-En mode bloc, la premiere duree est l'attente avant l'arrivee des donnees ; les
-suivantes sont les durees de reception par bloc. En mode intervalle, des zeros
-initiaux peuvent apparaitre en attendant les donnees.
+Par defaut, toute la chronologie est enregistree, y compris le delai de
+connexion et serveur (TTFB en mode bloc, intervalles zero initiaux en mode
+intervalle). Le decalage polynomial
+.BR \-p
+est zero sauf si
+.B \-d
+est active.
+.PP
+Avec
+.BR \-d ", l'attente avant les donnees est omise de la serie de barres, de "
+.BR \-w ", "
+.BR \-c ", et de l'ajustement polynomial ; "
+.BR \-p
+decalage indique alors le delai retire (secondes en mode intervalle, nombre de
+barres de preambule en mode bloc).
 .PP
 La fin de sortie signifie telechargement termine, limite
 .B \-\-window
@@ -46,16 +58,20 @@ Arreter apres
 octets recus.
 .TP
 .BR \-w ", " \-\-window =\fINUM\fR[um][s]
-Arreter apres la limite de temps.
+Arreter apres la limite de temps. Avec
+.BR \-d ,
+la limite s'applique seulement apres le debut de l'arrivee des donnees.
 .TP
 .BR \-p ", " \-\-polynomial =\fIORDER\fR
 Apres la serie, afficher une ligne d'ajustement polynomial :
 .IR offset
-puis coefficients. En mode bloc, offset est le nombre de blocs zero initiaux ;
-en mode intervalle, le delai avant le debut de reception, en secondes.
-Avec
+puis coefficients. Par defaut offset est zero ; avec
+.BR \-d ,
+offset est le delai retire avant les donnees (secondes en mode intervalle,
+nombre de barres de preambule en mode bloc). Le meme ajustement est trace sur le
+graphique
 .BR \-\-gnuplot
-, la meme courbe est tracee.
+lorsque cette option est donnee.
 .TP
 .BR \-g ", " \-\-gnuplot =\fIFILE\fR
 Ecrire la sortie gnuplot dans
@@ -80,6 +96,27 @@ mesuree a partir de
 .IR NUM
 apres le debut des donnees jusqu'a la fin du transfert.
 .TP
+.BR \-c ", " \-\-count
+Apres la serie, afficher une ligne de resume :
+.IR series-count size-bytes duration-usec bytes-per-second .
+.IR series-count
+est le nombre de valeurs de barres ;
+.IR size-bytes
+est le total d'octets recus ;
+.IR duration-usec
+est le temps de transfert horloge murale de l'origine de mesure a la fin (depuis
+le debut de connexion sauf si
+.B \-d
+est active) ;
+.IR bytes-per-second
+est le debit moyen sur cette duree.
+.TP
+.BR \-d ", " \-\-delay-started
+Omettre l'attente avant les donnees de la serie de barres et de
+.BR \-w ", " \-c ", et de l'ajustement polynomial. "
+.BR \-p
+decalage indique le delai retire.
+.TP
 .BR \-q ", " \-\-quiet
 Ne pas afficher la serie de barres.
 .TP
@@ -92,18 +129,66 @@ Afficher l'aide et quitter.
 .B \-\-version
 Afficher la version et quitter.
 .SH EXAMPLES
+.SS Mesures de base
 .TP
 Blocs de 64 Kio :
 .B getbar \-b 64k https://example.com/file
 .TP
-Intervalles de 100 ms, estimation apres 1 s :
+Intervalles de 100 ms avec estimation de vitesse apres 1 s (serie masquee) :
 .B getbar \-i 100ms \-e 1s \-q https://example.com/file
 .TP
-Graphique bloc avec polynome :
+Ligne de resume apres serie par intervalles :
+.B getbar \-i 100ms \-c https://example.com/file
+.br
+La sortie se termine par une ligne telle que
+.IR "20 1048576 1523400 688421"
+(nombre de barres, octets, microsecondes, o/s).
+.TP
+Afficher le time-to-first-byte (microsecondes) en mode bloc :
+.B getbar \-b 64k \-s 256k https://example.com/file | awk '{print $1}'
+.SS Taille ou duree controlee
+.TP
+Echantillonner 10 Mio et afficher une estimation B/s en regime etabli :
+.B getbar \-i 100ms \-s 10M \-e 2s \-q https://mirror.example/file
+.TP
+Executer au plus 30 s (test de charge prolongee) :
+.B getbar \-i 1s \-w 30s \-v https://cdn.example/large.bin
+.TP
+Arreter au premier atteint, 50 Mio ou 60 s :
+.B getbar \-b 1M \-s 50M \-w 60s https://example.com/file
+.SS Graphiques et analyse
+.TP
+Intervalle fractionnaire, fenetre de 3 s, verbose, ecrasement du graphique :
+.B getbar \-vfw3 \-i0.1s \-g /tmp/getbar.png \-f https://example.com/file
+.TP
+Graphique bloc avec superposition polynomiale quadratique :
 .B getbar \-b 64k \-p 2 \-g /tmp/getbar.png https://example.com/file
+.TP
+Graphique intervalle avec superposition polynomiale :
+.B getbar \-i 100ms \-p 2 \-g chart.png \-f https://example.com/file
+.TP
+Exporter SVG pour rapports :
+.B getbar \-i 200ms \-p 2 \-g report.svg \-f https://example.com/file
 .TP
 Enregistrer un script gnuplot sans rendu :
 .B getbar \-b 64k \-g /tmp/getbar.gp https://example.com/file
+.SS Comparer des miroirs
+.TP
+Une ligne B/s estimee par URL (echantillon de 5 Mio) :
+.B for url in https://mirror-a.example/file https://mirror-b.example/file; do printf '%s\\t' "$url"; getbar \-i 100ms \-s 5M \-e 1s \-q "$url"; done
+.TP
+Trier les miroirs par debit estime (\fImirrors.txt\fR liste une URL par ligne) :
+.B while read \-r url; do bps=$(getbar \-i 100ms \-s 5M \-e 1s \-q "$url") || continue; printf '%s\\t%s\\n' "$bps" "$url"; done < mirrors.txt | sort \-nr
+.SS Integration shell
+.TP
+Journaux verbose sur stderr, serie sur stdout :
+.B getbar \-v \-i 100ms \-s 10M https://example.com/file > series.txt
+.TP
+Enregistrer serie et graphique en une execution :
+.B getbar \-i 100ms \-s 20M \-g run.png \-f https://example.com/file | tee series.txt
+.TP
+MiB/s approximatif depuis la ligne d'estimation :
+.B bps=$(getbar \-i 100ms \-s 10M \-e 1s \-q https://example.com/file); awk \-v b="$bps" 'BEGIN { printf "~ %.2f MiB/s\\n", b / 1024 / 1024 }'
 .SH FILES
 .TP
 .I $XDG_CONFIG_HOME/getbar/gnuplot.rc

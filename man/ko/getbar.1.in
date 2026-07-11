@@ -13,8 +13,22 @@ getbar \- HTTP 다운로드 처리량 막대 시리즈
 블록 모드에서는 블록별 수신 시간(마이크로초)을, 간격 모드에서는 시간 구간별
 수신 바이트 수를 기록합니다.
 .PP
-블록 모드의 첫 값은 데이터 도착 전 대기 시간입니다. 이후 값은 각 블록 수신 시간입니다.
-간격 모드에서는 데이터 대기 중 선행 0이 출력될 수 있습니다.
+기본적으로 연결 및 서버 지연을 포함한 전체 타임라인을 기록합니다(블록 모드에서는 TTFB,
+간격 모드에서는 선행 0 간격). 다항식
+.BR \-p
+offset은
+.B \-d
+를 지정하지 않으면 0입니다.
+.PP
+.BR \-d
+를 지정하면 데이터 도착 전 대기는 막대 시리즈,
+.BR \-w
+,
+.BR \-c
+, 다항식 적합에서 제외됩니다.
+.BR \-p
+offset은 제거된 지연을 보고합니다(간격 모드에서는 초, 블록 모드에서는 프리앰블
+막대 수).
 .PP
 출력 종료는 다운로드 완료,
 .B \-\-window
@@ -42,14 +56,18 @@ getbar \- HTTP 다운로드 처리량 막대 시리즈
 .TP
 .BR \-w ", " \-\-window =\fINUM\fR[um][s]
 지정 시간 후 중지합니다.
+.BR \-d
+를 지정하면 제한은 데이터 도착 시작 후에만 적용됩니다.
 .TP
 .BR \-p ", " \-\-polynomial =\fIORDER\fR
 시리즈 뒤에 다항식 적합 행을 출력합니다:
 .IR offset
-및 계수. 블록 모드에서 offset은 선행 0 블록 수, 간격 모드에서는 수신 시작 전
-지연(초)입니다.
+및 계수. 기본 offset은 0입니다.
+.BR \-d
+를 지정하면 offset은 제거된 데이터 전 지연(간격 모드에서는 초, 블록 모드에서는
+프리앰블 막대 수)입니다. 이 옵션을 지정하면 같은 적합이
 .BR \-\-gnuplot
-도 지정하면 차트에 같은 적합을 그립니다.
+차트에도 그려집니다.
 .TP
 .BR \-g ", " \-\-gnuplot =\fIFILE\fR
 gnuplot 출력을
@@ -71,6 +89,29 @@ gnuplot 출력을
 .IR NUM
 부터 전송 종료까지 측정합니다.
 .TP
+.BR \-c ", " \-\-count
+시리즈 뒤에 요약 행을 한 줄 출력합니다:
+.IR series-count size-bytes duration-usec bytes-per-second .
+.IR series-count
+는 막대 값 개수,
+.IR size-bytes
+는 수신 바이트 총합,
+.IR duration-usec
+는 측정 시작점부터 종료까지의 벽시계 전송 시간(
+.B \-d
+미지정 시 연결 시작부터),
+.IR bytes-per-second
+는 해당 기간의 평균 처리량입니다.
+.TP
+.BR \-d ", " \-\-delay-started
+데이터 도착 전 대기를 막대 시리즈 및
+.BR \-w
+,
+.BR \-c
+, 다항식 적합에서 제외합니다.
+.BR \-p
+offset은 제거된 지연을 보고합니다.
+.TP
 .BR \-q ", " \-\-quiet
 막대 시리즈를 출력하지 않습니다.
 .TP
@@ -83,18 +124,66 @@ gnuplot 출력을
 .B \-\-version
 버전을 출력하고 종료합니다.
 .SH EXAMPLES
+.SS 기본 측정
 .TP
 64 KiB 블록:
 .B getbar \-b 64k https://example.com/file
 .TP
-100 ms 간격, 1 s 후 속도 추정:
+100 ms 간격, 1 s 후 속도 추정(시리즈 숨김):
 .B getbar \-i 100ms \-e 1s \-q https://example.com/file
 .TP
-블록 차트에 다항식 겹치기:
+간격 시리즈 뒤 요약 행:
+.B getbar \-i 100ms \-c https://example.com/file
+.br
+출력 끝에
+.IR "20 1048576 1523400 688421"
+형식의 행(막대 수, 바이트, 마이크로초, B/s).
+.TP
+블록 모드에서 time-to-first-byte(마이크로초) 출력:
+.B getbar \-b 64k \-s 256k https://example.com/file | awk '{print $1}'
+.SS 크기 또는 시간 제어
+.TP
+10 MiB 샘플 후 정상 상태 B/s 추정 출력:
+.B getbar \-i 100ms \-s 10M \-e 2s \-q https://mirror.example/file
+.TP
+최대 30 s 실행(소크 테스트):
+.B getbar \-i 1s \-w 30s \-v https://cdn.example/large.bin
+.TP
+50 MiB 또는 60 s 중 먼저 도달하는 쪽에서 중지:
+.B getbar \-b 1M \-s 50M \-w 60s https://example.com/file
+.SS 차트 및 분석
+.TP
+소수 간격, 3 s 윈도우, verbose, 차트 덮어쓰기:
+.B getbar \-vfw3 \-i0.1s \-g /tmp/getbar.png \-f https://example.com/file
+.TP
+블록 차트에 2차 다항식 겹치기:
 .B getbar \-b 64k \-p 2 \-g /tmp/getbar.png https://example.com/file
+.TP
+간격 차트에 다항식 겹치기:
+.B getbar \-i 100ms \-p 2 \-g chart.png \-f https://example.com/file
+.TP
+보고서용 SVG 내보내기:
+.B getbar \-i 200ms \-p 2 \-g report.svg \-f https://example.com/file
 .TP
 렌더링 없이 gnuplot 스크립트 저장:
 .B getbar \-b 64k \-g /tmp/getbar.gp https://example.com/file
+.SS 미러 비교
+.TP
+URL당 추정 B/s 한 줄(5 MiB 샘플):
+.B for url in https://mirror-a.example/file https://mirror-b.example/file; do printf '%s\\t' "$url"; getbar \-i 100ms \-s 5M \-e 1s \-q "$url"; done
+.TP
+추정 처리량으로 미러 정렬(\fImirrors.txt\fR는 한 줄에 URL 하나):
+.B while read \-r url; do bps=$(getbar \-i 100ms \-s 5M \-e 1s \-q "$url") || continue; printf '%s\\t%s\\n' "$bps" "$url"; done < mirrors.txt | sort \-nr
+.SS 셸 통합
+.TP
+verbose 로그는 stderr, 시리즈는 stdout:
+.B getbar \-v \-i 100ms \-s 10M https://example.com/file > series.txt
+.TP
+한 번의 실행으로 시리즈와 차트 저장:
+.B getbar \-i 100ms \-s 20M \-g run.png \-f https://example.com/file | tee series.txt
+.TP
+추정 행에서 대략적인 MiB/s:
+.B bps=$(getbar \-i 100ms \-s 10M \-e 1s \-q https://example.com/file); awk \-v b="$bps" 'BEGIN { printf "~ %.2f MiB/s\\n", b / 1024 / 1024 }'
 .SH FILES
 .TP
 .I $XDG_CONFIG_HOME/getbar/gnuplot.rc

@@ -13,8 +13,22 @@ getbar \- HTTP ダウンロードのスループット棒系列
 ブロックモードでは各ブロックの受信時間（マイクロ秒）を、間隔モードでは各時間片の
 受信バイト数を記録します。
 .PP
-ブロックモードの最初の値はデータ到着前の待ち時間です。以降は各ブロックの受信時間です。
-間隔モードではデータ待ち中に先頭ゼロが出力されることがあります。
+既定では接続およびサーバー遅延を含むタイムライン全体を記録します（ブロックモードでは
+TTFB、間隔モードでは先頭のゼロ間隔）。多項式
+.BR \-p
+の offset は
+.B \-d
+を指定しない限りゼロです。
+.PP
+.BR \-d
+を指定すると、データ到着前の待ち時間は棒系列、
+.BR \-w
+、
+.BR \-c
+、多項式フィットから除外されます。
+.BR \-p
+の offset は除去した遅延を報告します（間隔モードでは秒、ブロックモードでは
+プリアンブル棒数）。
 .PP
 出力の終了は、ダウンロード完了、
 .B \-\-window
@@ -42,14 +56,18 @@ getbar \- HTTP ダウンロードのスループット棒系列
 .TP
 .BR \-w ", " \-\-window =\fINUM\fR[um][s]
 指定時間後に停止します。
+.BR \-d
+を指定した場合、制限はデータ到着開始後にのみ適用されます。
 .TP
 .BR \-p ", " \-\-polynomial =\fIORDER\fR
 系列の後に多項式フィット行を出力します:
 .IR offset
-と係数。ブロックモードでは offset は先頭ゼロブロック数、間隔モードでは受信開始前の
-遅延（秒）です。
+と係数。既定では offset はゼロです。
+.BR \-d
+を指定した場合、offset は除去したデータ前遅延（間隔モードでは秒、ブロックモードでは
+プリアンブル棒数）です。このオプション指定時、同じフィットは
 .BR \-\-gnuplot
-も指定した場合、同じフィットをグラフに描画します。
+グラフにも描画されます。
 .TP
 .BR \-g ", " \-\-gnuplot =\fIFILE\fR
 gnuplot 出力を
@@ -71,6 +89,29 @@ gnuplot 出力を
 .IR NUM
 から転送終了までを測定します。
 .TP
+.BR \-c ", " \-\-count
+系列の後に要約行を 1 行出力します:
+.IR series-count size-bytes duration-usec bytes-per-second 。
+.IR series-count
+は棒値の数、
+.IR size-bytes
+は受信バイト総数、
+.IR duration-usec
+は測定起点から終了までの壁時計転送時間（
+.B \-d
+未指定時は接続開始から）、
+.IR bytes-per-second
+はその期間の平均スループットです。
+.TP
+.BR \-d ", " \-\-delay-started
+データ到着前の待ち時間を棒系列および
+.BR \-w
+、
+.BR \-c
+、多項式フィットから除外します。
+.BR \-p
+の offset は除去した遅延を報告します。
+.TP
 .BR \-q ", " \-\-quiet
 棒系列を出力しません。
 .TP
@@ -83,18 +124,66 @@ gnuplot 出力を
 .B \-\-version
 バージョンを表示して終了します。
 .SH EXAMPLES
+.SS 基本的な測定
 .TP
 64 KiB ブロック:
 .B getbar \-b 64k https://example.com/file
 .TP
-100 ms 間隔、1 s 後に速度推定:
+100 ms 間隔、1 s 後に速度推定（系列非表示）:
 .B getbar \-i 100ms \-e 1s \-q https://example.com/file
 .TP
-ブロックグラフに多項式を重ねる:
+間隔系列の後に要約行:
+.B getbar \-i 100ms \-c https://example.com/file
+.br
+出力末尾は
+.IR "20 1048576 1523400 688421"
+のような行（棒数、バイト、マイクロ秒、B/s）。
+.TP
+ブロックモードで time-to-first-byte（マイクロ秒）を表示:
+.B getbar \-b 64k \-s 256k https://example.com/file | awk '{print $1}'
+.SS サイズまたは時間の制御
+.TP
+10 MiB をサンプルし定常 B/s 推定を出力:
+.B getbar \-i 100ms \-s 10M \-e 2s \-q https://mirror.example/file
+.TP
+最大 30 s 実行（ソークテスト）:
+.B getbar \-i 1s \-w 30s \-v https://cdn.example/large.bin
+.TP
+50 MiB または 60 s のいずれか早い方で停止:
+.B getbar \-b 1M \-s 50M \-w 60s https://example.com/file
+.SS グラフと分析
+.TP
+小数間隔、3 s ウィンドウ、verbose、グラフ上書き:
+.B getbar \-vfw3 \-i0.1s \-g /tmp/getbar.png \-f https://example.com/file
+.TP
+ブロックグラフに 2 次多項式を重ねる:
 .B getbar \-b 64k \-p 2 \-g /tmp/getbar.png https://example.com/file
+.TP
+間隔グラフに多項式を重ねる:
+.B getbar \-i 100ms \-p 2 \-g chart.png \-f https://example.com/file
+.TP
+レポート用 SVG をエクスポート:
+.B getbar \-i 200ms \-p 2 \-g report.svg \-f https://example.com/file
 .TP
 描画せず gnuplot スクリプトを保存:
 .B getbar \-b 64k \-g /tmp/getbar.gp https://example.com/file
+.SS ミラーの比較
+.TP
+URL ごとに 1 行の推定 B/s（5 MiB サンプル）:
+.B for url in https://mirror-a.example/file https://mirror-b.example/file; do printf '%s\\t' "$url"; getbar \-i 100ms \-s 5M \-e 1s \-q "$url"; done
+.TP
+推定スループットでミラーをソート（\fImirrors.txt\fR は 1 行 1 URL）:
+.B while read \-r url; do bps=$(getbar \-i 100ms \-s 5M \-e 1s \-q "$url") || continue; printf '%s\\t%s\\n' "$bps" "$url"; done < mirrors.txt | sort \-nr
+.SS シェル連携
+.TP
+verbose ログは stderr、系列は stdout:
+.B getbar \-v \-i 100ms \-s 10M https://example.com/file > series.txt
+.TP
+1 回の実行で系列とグラフを保存:
+.B getbar \-i 100ms \-s 20M \-g run.png \-f https://example.com/file | tee series.txt
+.TP
+推定行からおおよその MiB/s:
+.B bps=$(getbar \-i 100ms \-s 10M \-e 1s \-q https://example.com/file); awk \-v b="$bps" 'BEGIN { printf "~ %.2f MiB/s\\n", b / 1024 / 1024 }'
 .SH FILES
 .TP
 .I $XDG_CONFIG_HOME/getbar/gnuplot.rc

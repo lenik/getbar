@@ -13,9 +13,19 @@ bang HTTP hoac HTTPS GET qua libcurl va ghi chuoi cot ra stdout.
 Che do khoi ghi thoi gian nhan tung khoi (micro giay); che do khoang thoi gian
 ghi so byte nhan moi khoang.
 .PP
-Trong che do khoi, gia tri dau la thoi gian cho truoc khi co du lieu; cac gia tri
-sau la thoi gian nhan khoi. Che do khoang thoi gian co the in so 0 dau khi cho
-du lieu.
+Mac dinh ghi toan bo timeline, bao gom ket noi va do tre may chu
+(TTFB o che do khoi, cac khoang zero dau o che do khoang thoi gian).
+Offset da thuc
+.BR \-p
+la zero tru khi dat
+.B \-d
+.PP
+Voi
+.BR \-d ", thoi gian cho truoc du lieu bi loai khoi chuoi cot, "
+.BR \-w ", "
+.BR \-c ", va fit da thuc; "
+.BR \-p
+offset bao cao do tre da loai (giay o che do khoang thoi gian, so khoi dau o che do khoi).
 .PP
 Ket thuc output nghia la tai xong, cham
 .B \-\-window
@@ -45,16 +55,19 @@ Dung sau khi nhan
 byte.
 .TP
 .BR \-w ", " \-\-window =\fINUM\fR[um][s]
-Dung sau gioi han thoi gian.
+Dung sau gioi han thoi gian. Voi
+.BR \-d ,
+gioi han chi ap dung sau khi du lieu bat dau den.
 .TP
 .BR \-p ", " \-\-polynomial =\fIORDER\fR
 Sau chuoi, in dong fit da thuc:
 .IR offset
-va he so. Che do khoi: offset la so khoi 0 dau; che do khoang: do tre truoc khi
-nhan (giay).
-Voi
+va he so. Mac dinh offset la zero; voi
+.BR \-d ,
+offset la do tre truoc du lieu da loai (giay o che do khoang thoi gian, so khoi dau o che do khoi).
+Cung duong fit duoc ve tren bieu do
 .BR \-\-gnuplot
-, ve cung duong cong tren bieu do.
+khi dung tuy chon nay.
 .TP
 .BR \-g ", " \-\-gnuplot =\fIFILE\fR
 Ghi output gnuplot vao
@@ -77,6 +90,26 @@ Sau chuoi, in toc do tai uoc tinh (byte/giay), do tu
 .IR NUM
 sau khi du lieu bat dau den den het transfer.
 .TP
+.BR \-c ", " \-\-count
+Sau chuoi, in mot dong tom tat:
+.IR series-count size-bytes duration-usec bytes-per-second .
+.IR series-count
+la so gia tri cot;
+.IR size-bytes
+la tong byte nhan;
+.IR duration-usec
+la thoi gian transfer thuc tu diem do den ket thuc (tu luc ket noi tru khi dat
+.B \-d
+);
+.IR bytes-per-second
+la throughput trung binh trong khoang do.
+.TP
+.BR \-d ", " \-\-delay-started
+Loai thoi gian cho truoc du lieu khoi chuoi cot va khoi
+.BR \-w ", " \-c ", va fit da thuc. "
+.BR \-p
+offset bao cao do tre da loai.
+.TP
 .BR \-q ", " \-\-quiet
 Khong in chuoi cot.
 .TP
@@ -89,18 +122,66 @@ In tro giup va thoat.
 .B \-\-version
 In phien ban va thoat.
 .SH EXAMPLES
+.SS Do luong co ban
 .TP
 Khoi 64 KiB:
 .B getbar \-b 64k https://example.com/file
 .TP
-Khoang 100 ms, uoc tinh sau 1 s:
+Khoang 100 ms, uoc tinh sau 1 s (an chuoi):
 .B getbar \-i 100ms \-e 1s \-q https://example.com/file
 .TP
-Bieu do khoi voi da thuc:
+Dong tom tat sau chuoi khoang thoi gian:
+.B getbar \-i 100ms \-c https://example.com/file
+.br
+Output ket thuc bang dong nhu
+.IR "20 1048576 1523400 688421"
+(so cot, byte, micro giay, B/s).
+.TP
+In time-to-first-byte (micro giay) tu che do khoi:
+.B getbar \-b 64k \-s 256k https://example.com/file | awk '{print $1}'
+.SS Kiem soat kich thuoc hoac thoi gian
+.TP
+Lay mau 10 MiB va in uoc tinh B/s on dinh:
+.B getbar \-i 100ms \-s 10M \-e 2s \-q https://mirror.example/file
+.TP
+Chay toi da 30 s (soak test):
+.B getbar \-i 1s \-w 30s \-v https://cdn.example/large.bin
+.TP
+Dung khi dat truoc 50 MiB hoac 60 s:
+.B getbar \-b 1M \-s 50M \-w 60s https://example.com/file
+.SS Bieu do va phan tich
+.TP
+Khoang thap phan, cua so 3 s, verbose, ghi de bieu do:
+.B getbar \-vfw3 \-i0.1s \-g /tmp/getbar.png \-f https://example.com/file
+.TP
+Bieu do khoi voi da thuc bac hai:
 .B getbar \-b 64k \-p 2 \-g /tmp/getbar.png https://example.com/file
+.TP
+Bieu do khoang thoi gian voi da thuc:
+.B getbar \-i 100ms \-p 2 \-g chart.png \-f https://example.com/file
+.TP
+Xuat SVG cho bao cao:
+.B getbar \-i 200ms \-p 2 \-g report.svg \-f https://example.com/file
 .TP
 Luu script gnuplot khong render:
 .B getbar \-b 64k \-g /tmp/getbar.gp https://example.com/file
+.SS So sanh mirror
+.TP
+Mot dong B/s uoc tinh moi URL (mau 5 MiB):
+.B for url in https://mirror-a.example/file https://mirror-b.example/file; do printf '%s\\t' "$url"; getbar \-i 100ms \-s 5M \-e 1s \-q "$url"; done
+.TP
+Sap xep mirror theo throughput uoc tinh (\fImirrors.txt\fR mot URL moi dong):
+.B while read \-r url; do bps=$(getbar \-i 100ms \-s 5M \-e 1s \-q "$url") || continue; printf '%s\\t%s\\n' "$bps" "$url"; done < mirrors.txt | sort \-nr
+.SS Tich hop shell
+.TP
+Log verbose ra stderr, chuoi ra stdout:
+.B getbar \-v \-i 100ms \-s 10M https://example.com/file > series.txt
+.TP
+Luu chuoi va bieu do trong mot lan chay:
+.B getbar \-i 100ms \-s 20M \-g run.png \-f https://example.com/file | tee series.txt
+.TP
+MiB/s xap xi tu dong uoc tinh:
+.B bps=$(getbar \-i 100ms \-s 10M \-e 1s \-q https://example.com/file); awk \-v b="$bps" 'BEGIN { printf "~ %.2f MiB/s\\n", b / 1024 / 1024 }'
 .SH FILES
 .TP
 .I $XDG_CONFIG_HOME/getbar/gnuplot.rc

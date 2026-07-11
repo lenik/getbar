@@ -14,9 +14,21 @@ der Standardausgabe auf.
 Im Blockmodus werden Empfangsdauern pro Block in Mikrosekunden erfasst, im
 Intervallmodus empfangene Bytes pro Zeitscheibe.
 .PP
-Im Blockmodus ist der erste Wert die Wartezeit vor Datenankunft; danach folgen
-die Block-Empfangsdauern. Im Intervallmodus koennen fuehrende Nullen waehrend
-des Wartens erscheinen.
+Standardmaessig wird die gesamte Zeitachse aufgezeichnet, einschliesslich
+Verbindungs- und Serververzoegerung (TTFB im Blockmodus, fuehrende Null-Intervalle
+im Intervallmodus). Der Polynom-
+.BR \-p
+-Offset ist null, sofern
+.B \-d
+nicht gesetzt ist.
+.PP
+Mit
+.BR \-d ", wird die Wartezeit vor Daten aus der Balkenreihe, aus "
+.BR \-w ", "
+.BR \-c ", und der Polynom-Anpassung ausgelassen; "
+.BR \-p
+-Offset gibt dann die entfernte Verzoegerung an (Sekunden im Intervallmodus,
+Anzahl Preamble-Bloecke im Blockmodus).
 .PP
 Ende der Ausgabe bedeutet: Download abgeschlossen,
 .B \-\-window
@@ -46,16 +58,19 @@ Nach Empfang von
 Bytes stoppen.
 .TP
 .BR \-w ", " \-\-window =\fINUM\fR[um][s]
-Nach Zeitlimit stoppen.
+Nach Zeitlimit stoppen. Mit
+.BR \-d ,
+gilt das Limit erst nach Beginn des Datenempfangs.
 .TP
 .BR \-p ", " \-\-polynomial =\fIORDER\fR
 Nach der Reihe eine Polynom-Anpassungszeile ausgeben:
 .IR offset
-und Koeffizienten. Im Blockmodus ist offset die Anzahl fuehrender Null-Bloecke;
-im Intervallmodus die Verzoegerung vor Empfangsbeginn in Sekunden.
-Mit
+und Koeffizienten. Standardmaessig ist offset null; mit
+.BR \-d ,
+ist offset die entfernte Wartezeit vor Daten (Sekunden im Intervallmodus,
+Anzahl Preamble-Bloecke im Blockmodus). Dieselbe Anpassung wird im
 .BR \-\-gnuplot
-wird dieselbe Kurve im Diagramm gezeichnet.
+-Diagramm gezeichnet, wenn diese Option gesetzt ist.
 .TP
 .BR \-g ", " \-\-gnuplot =\fIFILE\fR
 Gnuplot-Ausgabe nach
@@ -80,6 +95,27 @@ ab
 .IR NUM
 nach Datenankunft bis Transferende.
 .TP
+.BR \-c ", " \-\-count
+Nach der Reihe eine Zusammenfassungszeile ausgeben:
+.IR series-count size-bytes duration-usec bytes-per-second .
+.IR series-count
+ist die Anzahl der Balkenwerte;
+.IR size-bytes
+ist die gesamt empfangenen Bytes;
+.IR duration-usec
+ist die Wanduhr-Transferzeit vom Messursprung bis zum Ende (ab Verbindungsstart,
+sofern
+.B \-d
+nicht gesetzt ist);
+.IR bytes-per-second
+ist der Durchschnittsdurchsatz ueber diese Dauer.
+.TP
+.BR \-d ", " \-\-delay-started
+Wartezeit vor Daten aus der Balkenreihe und aus
+.BR \-w ", " \-c ", und der Polynom-Anpassung auslassen. "
+.BR \-p
+-Offset gibt die entfernte Verzoegerung an.
+.TP
 .BR \-q ", " \-\-quiet
 Balkenreihe nicht ausgeben.
 .TP
@@ -92,18 +128,66 @@ Hilfe anzeigen und beenden.
 .B \-\-version
 Version anzeigen und beenden.
 .SH EXAMPLES
+.SS Grundlegende Messungen
 .TP
 64-KiB-Bloecke:
 .B getbar \-b 64k https://example.com/file
 .TP
-100-ms-Intervalle, Schaetzung nach 1 s:
+100-ms-Intervalle mit Geschwindigkeitsschaetzung nach 1 s (Reihe ausgeblendet):
 .B getbar \-i 100ms \-e 1s \-q https://example.com/file
 .TP
-Blockdiagramm mit Polynom:
+Zusammenfassungszeile nach Intervallreihe:
+.B getbar \-i 100ms \-c https://example.com/file
+.br
+Ausgabe endet mit einer Zeile wie
+.IR "20 1048576 1523400 688421"
+(Anzahl Balken, Bytes, Mikrosekunden, B/s).
+.TP
+Time-to-first-byte (Mikrosekunden) aus Blockmodus ausgeben:
+.B getbar \-b 64k \-s 256k https://example.com/file | awk '{print $1}'
+.SS Kontrollierte Groesse oder Dauer
+.TP
+10 MiB abtasten und geschaetzte B/s im Dauerzustand ausgeben:
+.B getbar \-i 100ms \-s 10M \-e 2s \-q https://mirror.example/file
+.TP
+Hoechstens 30 s laufen (Soak-Test):
+.B getbar \-i 1s \-w 30s \-v https://cdn.example/large.bin
+.TP
+Stoppen bei dem, was zuerst eintritt: 50 MiB oder 60 s:
+.B getbar \-b 1M \-s 50M \-w 60s https://example.com/file
+.SS Diagramme und Analyse
+.TP
+Dezimales Intervall, 3-s-Fenster, ausfuehrlich, Diagramm ueberschreiben:
+.B getbar \-vfw3 \-i0.1s \-g /tmp/getbar.png \-f https://example.com/file
+.TP
+Blockdiagramm mit quadratischer Polynom-Ueberlagerung:
 .B getbar \-b 64k \-p 2 \-g /tmp/getbar.png https://example.com/file
+.TP
+Intervall-Diagramm mit Polynom-Ueberlagerung:
+.B getbar \-i 100ms \-p 2 \-g chart.png \-f https://example.com/file
+.TP
+SVG fuer Berichte exportieren:
+.B getbar \-i 200ms \-p 2 \-g report.svg \-f https://example.com/file
 .TP
 Nur gnuplot-Skript speichern:
 .B getbar \-b 64k \-g /tmp/getbar.gp https://example.com/file
+.SS Mirrors vergleichen
+.TP
+Eine geschaetzte B/s-Zeile pro URL (5-MiB-Stichprobe):
+.B for url in https://mirror-a.example/file https://mirror-b.example/file; do printf '%s\\t' "$url"; getbar \-i 100ms \-s 5M \-e 1s \-q "$url"; done
+.TP
+Mirrors nach geschaetztem Durchsatz sortieren (\fImirrors.txt\fR listet eine URL pro Zeile):
+.B while read \-r url; do bps=$(getbar \-i 100ms \-s 5M \-e 1s \-q "$url") || continue; printf '%s\\t%s\\n' "$bps" "$url"; done < mirrors.txt | sort \-nr
+.SS Shell-Integration
+.TP
+Ausfuehrliche Protokolle auf stderr, Reihe auf stdout:
+.B getbar \-v \-i 100ms \-s 10M https://example.com/file > series.txt
+.TP
+Reihe und Diagramm in einem Lauf speichern:
+.B getbar \-i 100ms \-s 20M \-g run.png \-f https://example.com/file | tee series.txt
+.TP
+Grobe MiB/s aus der Schaetzzeile:
+.B bps=$(getbar \-i 100ms \-s 10M \-e 1s \-q https://example.com/file); awk \-v b="$bps" 'BEGIN { printf "~ %.2f MiB/s\\n", b / 1024 / 1024 }'
 .SH FILES
 .TP
 .I $XDG_CONFIG_HOME/getbar/gnuplot.rc
