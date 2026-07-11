@@ -1,0 +1,6 @@
+option(
+    'readme-pdf',
+    type: 'boolean',
+    value: false,
+    description: 'Build and install README PDFs via the md2luapdf subproject',
+)
