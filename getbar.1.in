@@ -21,12 +21,13 @@ offset is zero unless
 is set.
 .PP
 With
-.BR \-d ", pre-data wait is omitted from the bar series, "
-.BR \-w ", "
-.BR \-c ", and the polynomial fit; "
+.BR \-d ", pre-data wait is omitted from the bar series and "
 .BR \-p
-offset then reports the stripped delay (seconds in interval mode, preamble bar
-count in block mode).
+offset reports the stripped delay (seconds in interval mode). "
+.IR TIMEOUT
+defaults to seconds; "
+.B 0
+waits indefinitely for the first byte. A positive timeout starts the data phase even when no bytes have arrived yet.
 .PP
 End of output means the download completed, hit
 .B \-\-window
@@ -56,17 +57,15 @@ Stop after receiving
 bytes.
 .TP
 .BR \-w ", " \-\-window =\fINUM\fR[um][s]
-Stop after the given time limit. With
-.BR \-d ,
-the limit applies only after data starts arriving.
+Stop after the given time limit from connection start.
 .TP
 .BR \-p ", " \-\-polynomial =\fIORDER\fR
 After the series, print a polynomial fit line:
 .IR offset
 followed by coefficients. By default offset is zero; with
 .BR \-d ,
-offset is the stripped pre-data delay (seconds in interval mode, preamble bar
-count in block mode). The same fit is drawn on the
+offset is the stripped pre-data delay in seconds (from connection start to the
+data phase). The same fit is drawn on the
 .BR \-\-gnuplot
 chart when this option is given.
 .TP
@@ -104,15 +103,19 @@ is total bytes received;
 is wall-clock transfer time from the measurement origin to finish (from
 connection start unless
 .B \-d
-is set);
+is set, then from when the data phase begins);
 .IR bytes-per-second
 is average throughput over that duration.
 .TP
-.BR \-d ", " \-\-delay-started
-Omit pre-data wait from the bar series and from
-.BR \-w ", " \-c ", and the polynomial fit. "
+.BR \-d ", " \-\-delayed =\fITIMEOUT\fR[um][s]
+Omit pre-data wait from the bar series.
 .BR \-p
 offset reports the stripped delay.
+.IR TIMEOUT
+is how long to wait for the first byte before starting the data phase anyway;
+use
+.BR \-d0
+to wait indefinitely for the first byte.
 .TP
 .BR \-q ", " \-\-quiet
 Do not print the bar series.
