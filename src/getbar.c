@@ -66,13 +66,15 @@ struct transfer {
     bool interval_mode;
     bool quiet;
     bool count;
-    bool delay_started;
+    bool delay_mode;
     bool verbose;
     bool force;
     char *gnuplot_output;
 
     struct series series;
     uint64_t start_us;
+    uint64_t delay_timeout_us;
+    uint64_t data_origin_us;
     uint64_t first_byte_us;
     uint64_t block_start_us;
     uint64_t end_us;
@@ -275,9 +277,41 @@ static void trim_trailing_zero_intervals(struct transfer *t) {
     }
 }
 
+static bool delay_active(const struct transfer *t) {
+    return t->delay_mode;
+}
+
+static bool data_phase_started(const struct transfer *t) {
+    return t->data_origin_us > 0;
+}
+
+static void begin_data_phase(struct transfer *t, uint64_t now) {
+    if (t->data_origin_us > 0) {
+        return;
+    }
+    t->data_origin_us = now;
+    if (t->interval_mode) {
+        t->next_interval_us = now + t->interval_us;
+        t->interval_bytes = 0;
+    } else {
+        t->block_start_us = now;
+        t->bytes_in_block = 0;
+    }
+}
+
+static void maybe_force_data_phase(struct transfer *t, uint64_t now) {
+    if (!delay_active(t) || t->data_origin_us > 0 || t->delay_timeout_us == 0) {
+        return;
+    }
+    const uint64_t deadline = t->start_us + t->delay_timeout_us;
+    if (now >= deadline) {
+        begin_data_phase(t, deadline);
+    }
+}
+
 static uint64_t measure_origin_us(const struct transfer *t) {
-    if (t->delay_started && t->first_byte_us > 0) {
-        return t->first_byte_us;
+    if (delay_active(t) && t->data_origin_us > 0) {
+        return t->data_origin_us;
     }
     return t->start_us;
 }
@@ -286,12 +320,7 @@ static bool window_expired(const struct transfer *t, uint64_t now) {
     if (t->window_us == 0) {
         return false;
     }
-    if (t->delay_started && t->first_byte_us == 0) {
-        return false;
-    }
-    const uint64_t origin = measure_origin_us(t);
-
-    return now >= origin && now - origin >= t->window_us;
+    return now - t->start_us >= t->window_us;
 }
 
 static void note_estimate(struct transfer *t, uint64_t now) {
@@ -318,11 +347,12 @@ static int progress_cb(void *userdata, curl_off_t dltotal, curl_off_t dlnow, cur
     if (t->stopped) {
         return 1;
     }
+    maybe_force_data_phase(t, now);
     if (window_expired(t, now)) {
         t->stopped = true;
         return 1;
     }
-    if (t->interval_mode) {
+    if (t->interval_mode && (!delay_active(t) || data_phase_started(t))) {
         flush_intervals(t, now, true);
     }
     note_estimate(t, now);
@@ -346,6 +376,7 @@ static size_t write_cb(char *ptr, size_t size, size_t nmemb, void *userdata) {
     if (t->stopped) {
         return 0;
     }
+    maybe_force_data_phase(t, now);
     if (window_expired(t, now)) {
         t->stopped = true;
         return 0;
@@ -357,19 +388,27 @@ static size_t write_cb(char *ptr, size_t size, size_t nmemb, void *userdata) {
 
     note_estimate(t, now);
 
-    if (t->first_byte_us == 0) {
+    if (t->first_byte_us == 0 && n > 0) {
         t->first_byte_us = now;
-        if (!t->interval_mode) {
+        if (t->data_origin_us == 0) {
+            begin_data_phase(t, now);
+        }
+        if (!t->interval_mode && !delay_active(t)) {
             if (series_push_live(t, now - t->start_us) != 0) {
                 die("out of memory");
             }
+            t->block_start_us = now;
+            t->bytes_in_block = 0;
+        } else if (!t->interval_mode) {
             t->block_start_us = now;
             t->bytes_in_block = 0;
         }
     }
 
     if (t->interval_mode) {
-        flush_intervals(t, now, true);
+        if (!delay_active(t) || data_phase_started(t)) {
+            flush_intervals(t, now, true);
+        }
         t->interval_bytes += (uint64_t)n;
     } else {
         size_t left = n;
@@ -421,6 +460,7 @@ static void finish_interval_series(struct transfer *t) {
 
 static void finish_transfer(struct transfer *t) {
     t->end_us = now_us();
+    maybe_force_data_phase(t, t->end_us);
     if (t->interval_mode) {
         finish_interval_series(t);
     } else if (t->bytes_in_block > 0 && t->block_start_us > 0) {
@@ -442,16 +482,10 @@ static size_t count_leading_zeros(const struct series *s, size_t start) {
 }
 
 static size_t series_data_start(const struct transfer *t) {
-    if (!t->delay_started) {
+    if (!delay_active(t)) {
         return 0;
     }
-    if (t->interval_mode) {
-        return count_leading_zeros(&t->series, 0);
-    }
-    if (t->series.len == 0) {
-        return 0;
-    }
-    return 1 + count_leading_zeros(&t->series, 1);
+    return count_leading_zeros(&t->series, 0);
 }
 
 static void emit_new_series_values(struct transfer *t) {
@@ -569,7 +603,7 @@ static void print_polynomial(const struct transfer *t, const struct poly_result 
         return;
     }
 
-    if (t->interval_mode) {
+    if (t->interval_mode || delay_active(t)) {
         printf("%g", poly->offset);
     } else {
         printf("%.0f", poly->offset);
@@ -610,11 +644,15 @@ static int compute_poly(const struct transfer *t, struct poly_result *poly) {
 
     if (t->interval_mode) {
         poly->x_step = (double)t->interval_us / 1000000.0;
-        if (t->delay_started) {
+        if (delay_active(t)) {
             lead = count_leading_zeros(&t->series, 0);
             start = lead;
             n = t->series.len - start;
-            poly->offset = (double)lead * poly->x_step;
+            if (t->data_origin_us > t->start_us) {
+                poly->offset = (double)(t->data_origin_us - t->start_us) / 1000000.0;
+            } else {
+                poly->offset = (double)lead * poly->x_step;
+            }
             poly->x_origin = 0.0;
             for (size_t i = 0; i < n; i++) {
                 xs[i] = (double)i * poly->x_step;
@@ -636,11 +674,15 @@ static int compute_poly(const struct transfer *t, struct poly_result *poly) {
             free(ys);
             return 0;
         }
-        if (t->delay_started) {
-            lead = count_leading_zeros(&t->series, 1);
-            start = 1 + lead;
+        if (delay_active(t)) {
+            lead = count_leading_zeros(&t->series, 0);
+            start = lead;
             n = t->series.len - start;
-            poly->offset = (double)(1 + lead);
+            if (t->data_origin_us > t->start_us) {
+                poly->offset = (double)(t->data_origin_us - t->start_us) / 1000000.0;
+            } else {
+                poly->offset = (double)lead;
+            }
             poly->x_origin = 0.0;
         } else {
             start = 1;
@@ -809,7 +851,7 @@ static void write_gnuplot_script(FILE *gp, const struct transfer *t, const struc
 
         for (size_t j = 0; j + plot_start < t->series.len; j++) {
             const size_t i = plot_start + j;
-            const double x = t->delay_started ? (double)j * step : (double)i * step;
+            const double x = delay_active(t) ? (double)j * step : (double)i * step;
 
             fprintf(gp, "%g %g\n", x, (double)t->series.values[i]);
         }
@@ -818,7 +860,7 @@ static void write_gnuplot_script(FILE *gp, const struct transfer *t, const struc
 
         for (size_t j = 0; j + plot_start < t->series.len; j++) {
             const size_t i = plot_start + j;
-            const double x = t->delay_started ? (double)j : (double)i;
+            const double x = delay_active(t) ? (double)j : (double)i;
 
             fprintf(gp, "%g %g\n", x, (double)t->series.values[i] / 1000000.0);
         }
@@ -928,8 +970,8 @@ static void usage(FILE *out) {
     fputs(_("output estimated bytes/sec after delay\n"), out);
     fputs("  -c, --count                    ", out);
     fputs(_("print summary after series: count size duration bps\n"), out);
-    fputs("  -d, --delay-started            ", out);
-    fputs(_("omit pre-data wait from series, window, count; set -p offset\n"), out);
+    fputs("  -d, --delayed=NUM[um][s]       ", out);
+    fputs(_("omit pre-data wait; force data phase after timeout (0=infinite)\n"), out);
     fputs("  -v, --verbose                  ", out);
     fputs(_("more logging to stderr\n"), out);
     fputs("  -q, --quiet                    ", out);
@@ -944,6 +986,8 @@ static void usage(FILE *out) {
             "omitted from the series and derived metrics; -p then reports the delay\n"
             "as offset. Interval mode (-i) includes leading zero intervals by default;\n"
             "with -d they are omitted and -p offset is the idle time in seconds.\n"
+            "A -d timeout of 0 waits indefinitely for the first byte; a positive\n"
+            "timeout starts the data phase even when no bytes have arrived yet.\n"
             "Polynomial, count, and estimate lines are printed after the series.\n"
             "Optional theming: $XDG_CONFIG_HOME/getbar/gnuplot.rc\n"),
           out);
@@ -963,7 +1007,7 @@ static void version(void) {
     fputs(_("There is NO WARRANTY, to the extent permitted by law.\n"), stdout);
 }
 
-#define SHORT_OPTS "b:i:s:w:p:g:fe:cdvqh"
+#define SHORT_OPTS "b:i:s:w:p:g:fe:cd:vqh"
 
 struct argv_buf {
     char **items;
@@ -1132,7 +1176,7 @@ int main(int argc, char **argv) {
         {"force", no_argument, NULL, 'f'},
         {"estimate-bps", required_argument, NULL, 'e'},
         {"count", no_argument, NULL, 'c'},
-        {"delay-started", no_argument, NULL, 'd'},
+        {"delayed", required_argument, NULL, 'd'},
         {"verbose", no_argument, NULL, 'v'},
         {"quiet", no_argument, NULL, 'q'},
         {"help", no_argument, NULL, 'h'},
@@ -1210,7 +1254,10 @@ int main(int argc, char **argv) {
             t.count = true;
             break;
         case 'd':
-            t.delay_started = true;
+            t.delay_mode = true;
+            if (parse_time_us(optarg, &t.delay_timeout_us) != 0) {
+                die("invalid delay timeout");
+            }
             break;
         case 'v':
             t.verbose = true;
@@ -1287,7 +1334,7 @@ int main(int argc, char **argv) {
     curl_easy_setopt(easy, CURLOPT_PROGRESSDATA, &t);
 #endif
     curl_easy_setopt(easy, CURLOPT_NOSIGNAL, 1L);
-    if (t.window_us > 0 && !t.delay_started) {
+    if (t.window_us > 0) {
         const long timeout_ms = (long)((t.window_us + 999) / 1000);
         curl_easy_setopt(easy, CURLOPT_TIMEOUT_MS, timeout_ms);
     }
