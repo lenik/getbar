@@ -59,8 +59,20 @@ After the series line, optional extra lines may appear:
 
 - **Polynomial** (`-p`): `offset coef_n … coef_0` (high order first after offset)
 - **Estimate** (`-e`): average bytes per second from a point after data starts
+- **Count** (`-c`): `series-count size-bytes duration-usec bytes-per-second`
 
 Use `-q` to suppress the series and print only the extras.
+
+The bar series is streamed to stdout as each value is recorded (unbuffered,
+flushed immediately). Pipelines and live dashboards see data without waiting
+for the download to finish.
+
+By default the full timeline is recorded, including connection and server delay
+(TTFB in block mode, leading zero intervals in interval mode). With
+**`-d` / `--delayed=TIMEOUT`**, pre-data wait is omitted from the series;
+`-p` offset reports the stripped delay in seconds. `TIMEOUT` is required:
+`-d0` waits indefinitely for the first byte; a positive value (e.g. `-d5s`)
+starts the data phase after that limit even when no bytes have arrived yet.
 
 End of the transfer is when the download finishes, `-w` / `--window` expires,
 `-s` / `--size-max` is reached, or the request fails.
@@ -75,11 +87,13 @@ In interval mode, trailing zero buckets after EOF are dropped (with a short
 | `-b`, `--block-size=NUM[kmgKMG]` | Block size for block mode |
 | `-i`, `--interval=NUM[um][s]` | Slice length for interval mode; `NUM` may be fractional (`0.1s`, `100.5ms`) |
 | `-s`, `--size-max=NUM[kmgKMG]` | Stop after receiving `NUM` bytes |
-| `-w`, `--window=NUM[um][s]` | Stop after a time limit |
+| `-w`, `--window=NUM[um][s]` | Stop after a time limit from connection start |
 | `-p`, `--polynomial=ORDER` | Fit a polynomial (order 0–7) and print offset + coefficients |
 | `-g`, `--gnuplot=FILE` | Write a chart or gnuplot script (see below) |
 | `-f`, `--force` | Overwrite an existing gnuplot output file |
 | `-e`, `--estimate-bps=NUM[um][s]` | Print estimated B/s measured from `NUM` after data starts |
+| `-c`, `--count` | Print summary line: bar count, bytes, duration µs, average B/s |
+| `-d`, `--delayed=NUM[um][s]` | Omit pre-data wait from series; `-d0` waits forever for first byte |
 | `-v`, `--verbose` | Log URL and byte count on stderr |
 | `-q`, `--quiet` | Omit the bar series on stdout |
 | `-h`, `--help` | Help |
@@ -89,7 +103,7 @@ In interval mode, trailing zero buckets after EOF are dropped (with a short
 
 `k`/`m`/`g`/`t` (1024-based) or `K`/`M`/`G`/`T` (1000-based), e.g. `64k`, `10M`.
 
-### Time suffixes (`-i`, `-w`, `-e`)
+### Time suffixes (`-i`, `-w`, `-e`, `-d`)
 
 | Suffix | Meaning |
 |--------|---------|
@@ -115,11 +129,25 @@ Do not glue two option values in one cluster (use separate options instead).
 
 The **offset** is the idle period before useful data:
 
-- **Interval mode**: delay in seconds (leading zero slices × interval).
-- **Block mode**: count of zero-duration blocks after the TTFB bar.
+- **Without `-d`**: offset is zero; block mode still records TTFB as the first bar.
+- **With `-d`**: offset is the stripped pre-data delay in **seconds** (from
+  connection start to the data phase, whether triggered by the first byte or
+  by the `-d` timeout).
 
 Coefficients describe a polynomial fit over the non-idle part of the series.
 When combined with `-g`, the curve is drawn on the chart.
+
+## Delayed data phase (`-d`)
+
+```bash
+getbar -i 100ms -d0 -p 2 https://example.com/file    # wait forever for first byte
+getbar -i 100ms -d5s -w 30s https://example.com/file # start data phase after 5 s idle
+getbar -b 64k -d0 -s 256k https://example.com/file   # block mode without TTFB bar
+```
+
+`-d` requires a timeout value. Use `-d0` (not bare `-d`) to wait indefinitely.
+A positive timeout forces the data phase when no bytes have arrived yet, so
+interval mode may emit zero buckets and `-p` offset reflects the configured wait.
 
 ## Gnuplot output (`-g`)
 
@@ -156,7 +184,14 @@ getbar -b 64k https://example.com/file
 getbar -i 100ms -e 1s -q https://example.com/file
 ```
 
-Read time-to-first-byte (microseconds) from the first field in block mode:
+Summary line after the series (bar count, bytes, duration, B/s):
+
+```bash
+getbar -i 100ms -c https://example.com/file
+```
+
+Read time-to-first-byte (microseconds) from the first field in block mode
+(without `-d`):
 
 ```bash
 getbar -b 64k -s 256k https://example.com/file | awk '{print $1}'
