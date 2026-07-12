@@ -12,7 +12,7 @@ project(
             fi
             printf "%s" "$v"
         else
-            echo "1.1.0"
+            echo "1.1.1"
         fi
         ''',
         check: false,

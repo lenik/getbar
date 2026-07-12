@@ -1,3 +1,20 @@
+getbar (1.1.1) testing; urgency=medium
+
+  * Replace boolean -d/--delay-started with -d/--delayed=TIMEOUT[um][s]:
+      - omit pre-data wait from the bar series; -p offset reports the stripped
+        delay in seconds (connection start to data phase).
+      - TIMEOUT is required; use -d0 to wait indefinitely for the first byte.
+      - A positive timeout starts the data phase even when no bytes have
+        arrived yet (useful for measuring idle periods before giving up).
+  * --window always counts from connection start (no longer deferred by -d).
+  * Stream bar series to stdout as values are recorded (unbuffered stdout,
+    fflush after each value).
+  * Fix polynomial offset printing in block mode with -d (use seconds, not
+    integer bar count).
+  * Documentation: update getbar(1), README.md, README-zh_CN.md.
+
+ -- Lenik (谢继雷) <lenik@bodz.net>  Sun, 12 Jul 2026 16:55:00 +0800
+
 getbar (1.1.0) testing; urgency=medium
 
   * New option -d, --delay-started: omit pre-data wait from the bar series,
